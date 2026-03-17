@@ -379,6 +379,7 @@ function AdminContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Form.Item name="monthId" label={<span className="font-black text-[11px] uppercase text-slate-400">Target Month</span>} rules={[{ required: true }]}>
                   <Select size="large" className="h-12 rounded-xl" placeholder="Select Registry Month">
+                    <Select.Option value="all">Free Session</Select.Option>
                     {months.map(m => <Select.Option key={m.id} value={m.id}>{m.name}</Select.Option>)}
                   </Select>
                 </Form.Item>
