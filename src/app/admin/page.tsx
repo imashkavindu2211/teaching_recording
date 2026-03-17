@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Divider, Card, Typography, Modal, message as staticMessage, Select, Spin, App } from 'antd';
-import { PlusOutlined, MinusCircleOutlined, EditOutlined, DeleteOutlined, CopyOutlined } from '@ant-design/icons';
-import { LogIn, Database, Edit3, LogOut, Calendar, Save } from 'lucide-react';
+import { PlusOutlined, MinusCircleOutlined, EditOutlined, DeleteOutlined, CopyOutlined, ReloadOutlined } from '@ant-design/icons';
+import { LogIn, Database, Edit3, LogOut, Calendar, Save, RefreshCw } from 'lucide-react';
 import dayjs from 'dayjs';
 import { supabase } from '@/lib/supabase';
 
@@ -102,7 +102,7 @@ function AdminContent() {
   };
 
   const handleLogin = () => {
-    if (password === 'admin123') {
+    if (password === 'Admin@25258585') {
       setIsLoggedIn(true);
       message.success('Secure session established');
     } else {
@@ -144,17 +144,81 @@ function AdminContent() {
   };
 
   const deleteMonth = async (id: string) => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.from('months').delete().eq('id', id);
-      if (error) throw error;
-      message.success('Month purged from registry');
-      fetchData();
-    } catch (error: any) {
-      message.error('Cannot delete month with active recordings');
-    } finally {
-      setIsLoading(false);
-    }
+    let enteredPassword = '';
+    Modal.confirm({
+      title: 'Purge Month Category?',
+      content: (
+        <div className="pt-4">
+          <p className="mb-4 text-slate-500 font-bold text-xs uppercase tracking-widest text-red-600">Warning: This is a destructive action.</p>
+          <Input.Password 
+            placeholder="Enter Admin Password to confirm" 
+            onChange={(e) => enteredPassword = e.target.value}
+            className="rounded-xl h-12 border-2 border-slate-200"
+          />
+        </div>
+      ),
+      okText: 'Purge Category',
+      okType: 'danger',
+      onOk: async () => {
+        if (enteredPassword !== 'Admin@25258585') {
+          message.error('Invalid admin password. Operation declined.');
+          return Promise.reject();
+        }
+        setIsLoading(true);
+        try {
+          const { error } = await supabase.from('months').delete().eq('id', id);
+          if (error) throw error;
+          message.success('Month purged from registry');
+          fetchData();
+        } catch (error: any) {
+          message.error('Cannot delete month with active recordings');
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
+  };
+
+  const resetAccessCode = async (id: string) => {
+    let enteredPassword = '';
+    Modal.confirm({
+      title: 'Reset Access Code?',
+      content: (
+        <div className="pt-4">
+          <p className="mb-4 text-slate-500 font-bold text-xs uppercase tracking-widest text-[#DC143C]">New code will be generated immediately.</p>
+          <Input.Password 
+            placeholder="Enter Admin Password to confirm" 
+            onChange={(e) => enteredPassword = e.target.value}
+            className="rounded-xl h-12 border-2 border-slate-200"
+          />
+        </div>
+      ),
+      okText: 'Generate New Code',
+      okType: 'primary',
+      onOk: async () => {
+        if (enteredPassword !== 'Admin@25258585') {
+          message.error('Invalid admin password. Operation declined.');
+          return Promise.reject();
+        }
+        
+        setIsLoading(true);
+        const newCode = generateAccessCode();
+        try {
+          const { error } = await supabase
+            .from('months')
+            .update({ access_code: newCode })
+            .eq('id', id);
+
+          if (error) throw error;
+          message.success(`New code established: ${newCode}`);
+          fetchData();
+        } catch (error: any) {
+          message.error('Failed to reset access code');
+        } finally {
+          setIsLoading(false);
+        }
+      },
+    });
   };
 
   const onFinishAdd = async (values: any) => {
@@ -233,12 +297,26 @@ function AdminContent() {
   };
 
   const handleDeleteClass = async (id: string) => {
+    let enteredPassword = '';
     Modal.confirm({
       title: 'Purge Recording?',
-      content: 'This will permanently remove the data from cloud storage.',
+      content: (
+        <div className="pt-4">
+          <p className="mb-4 text-slate-500 font-bold text-xs uppercase tracking-widest">Secure Verification Required</p>
+          <Input.Password 
+            placeholder="Enter Admin Password to confirm" 
+            onChange={(e) => enteredPassword = e.target.value}
+            className="rounded-xl h-12 border-2 border-slate-200"
+          />
+        </div>
+      ),
       okText: 'Delete',
       okType: 'danger',
       onOk: async () => {
+        if (enteredPassword !== 'Admin@25258585') {
+          message.error('Invalid admin password. Operation declined.');
+          return Promise.reject();
+        }
         setIsLoading(true);
         try {
           const { error } = await supabase.from('classes').delete().eq('id', id);
@@ -344,16 +422,25 @@ function AdminContent() {
                         </span>
                       </div>
                       {m.access_code && (
-                        <button 
-                          className="flex items-center gap-1.5 text-emerald-500 hover:text-emerald-400 font-bold text-[10px] uppercase tracking-widest transition-all"
-                          onClick={() => {
-                            navigator.clipboard.writeText(m.access_code!);
-                            message.success(`Copied: ${m.access_code}`);
-                          }}
-                        >
-                          <CopyOutlined size={14} />
-                          <span>Copy</span>
-                        </button>
+                        <>
+                          <button 
+                            className="flex items-center gap-1.5 text-emerald-500 hover:text-emerald-400 font-bold text-[10px] uppercase tracking-widest transition-all"
+                            onClick={() => {
+                              navigator.clipboard.writeText(m.access_code!);
+                              message.success(`Copied: ${m.access_code}`);
+                            }}
+                          >
+                            <CopyOutlined size={14} />
+                            <span>Copy</span>
+                          </button>
+                          <button 
+                            className="flex items-center gap-1.5 text-slate-400 hover:text-[#DC143C] font-bold text-[10px] uppercase tracking-widest transition-all ml-2"
+                            onClick={() => resetAccessCode(m.id)}
+                          >
+                            <RefreshCw size={14} />
+                            <span>Reset</span>
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
