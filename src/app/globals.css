@@ -46,30 +46,36 @@ body {
   overflow-x: hidden;
 }
 
-/* Force High Contrast Black Placeholders */
+/* Optimized Placeholders */
 ::placeholder {
-  color: black !important;
+  color: #f1f5f9 !important;
   opacity: 1 !important;
 }
 
 ::-webkit-input-placeholder {
-  color: black !important;
+  color: #f1f5f9 !important;
   opacity: 1 !important;
 }
 
 ::-moz-placeholder {
-  color: black !important;
+  color: #f1f5f9 !important;
   opacity: 1 !important;
 }
 
 :-ms-input-placeholder {
-  color: black !important;
+  color: #f1f5f9 !important;
   opacity: 1 !important;
 }
 
 ::-ms-input-placeholder {
-  color: black !important;
+  color: #f1f5f9 !important;
   opacity: 1 !important;
+}
+
+/* Ant Design Password Icon visibility */
+.ant-input-password-icon {
+  color: black !important;
+  font-size: 18px !important;
 }
 
 /* Mobile Modal Optimization */
