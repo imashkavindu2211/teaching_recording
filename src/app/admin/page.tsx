@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, DatePicker, Divider, Card, Typography, Modal, message, Select, Spin } from 'antd';
-import { PlusOutlined, MinusCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Form, Input, Button, DatePicker, Divider, Card, Typography, Modal, message as staticMessage, Select, Spin, App } from 'antd';
+import { PlusOutlined, MinusCircleOutlined, EditOutlined, DeleteOutlined, CopyOutlined } from '@ant-design/icons';
 import { LogIn, Database, Edit3, LogOut, Calendar, Save } from 'lucide-react';
 import dayjs from 'dayjs';
 import { supabase } from '@/lib/supabase';
@@ -26,9 +26,19 @@ interface ClassEntry {
 interface Month {
   id: string;
   name: string;
+  access_code?: string;
 }
 
 export default function AdminPage() {
+  return (
+    <App>
+      <AdminContent />
+    </App>
+  );
+}
+
+function AdminContent() {
+  const { message } = App.useApp();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -79,6 +89,18 @@ export default function AdminPage() {
     }
   };
 
+  const generateAccessCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const randomArray = new Uint32Array(6);
+    window.crypto.getRandomValues(randomArray);
+    
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(randomArray[i] % chars.length);
+    }
+    return code;
+  };
+
   const handleLogin = () => {
     if (password === 'admin123') {
       setIsLoggedIn(true);
@@ -90,17 +112,31 @@ export default function AdminPage() {
 
   const onAddMonth = async (values: any) => {
     setIsLoading(true);
+    const accessCode = generateAccessCode();
+    console.log('Registering month with code:', accessCode);
+    
     try {
-      const { error } = await supabase.from('months').insert([
-        { id: values.id, name: values.name }
-      ]);
+      const { data, error } = await supabase
+        .from('months')
+        .insert([
+          { 
+            id: values.id, 
+            name: values.name, 
+            access_code: accessCode 
+          }
+        ])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database Error:', error);
+        throw new Error(error.message);
+      }
       
-      message.success('Month registry updated');
+      message.success(`Month registry updated. Access Code: ${accessCode}`);
       monthForm.resetFields();
-      fetchData();
+      await fetchData();
     } catch (error: any) {
+      console.error('Submission Error:', error);
       message.error(`Registration failed: ${error.message}`);
     } finally {
       setIsLoading(false);
@@ -298,9 +334,37 @@ export default function AdminPage() {
 
             <div className="mt-8 space-y-3">
               {months.map(m => (
-                <div key={m.id} className="flex items-center justify-between p-4 bg-white/40 dark:bg-slate-800/20 rounded-2xl border border-white/5">
-                  <Text className="font-black dark:text-white">{m.name}</Text>
-                  <Button type="text" danger icon={<DeleteOutlined />} onClick={() => deleteMonth(m.id)} loading={isLoading} />
+                <div key={m.id} className="flex items-center justify-between p-4 bg-white/40 dark:bg-slate-800/20 rounded-2xl border border-white/5 group/month">
+                  <div className="flex flex-col">
+                    <Text className="font-black dark:text-white text-lg tracking-tight">{m.name}</Text>
+                    <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                        <span className="text-[11px] font-black text-emerald-500 tracking-[0.2em] uppercase">
+                          {m.access_code || 'NO CODE'}
+                        </span>
+                      </div>
+                      {m.access_code && (
+                        <button 
+                          className="flex items-center gap-1.5 text-emerald-500 hover:text-emerald-400 font-bold text-[10px] uppercase tracking-widest transition-all"
+                          onClick={() => {
+                            navigator.clipboard.writeText(m.access_code!);
+                            message.success(`Copied: ${m.access_code}`);
+                          }}
+                        >
+                          <CopyOutlined size={14} />
+                          <span>Copy</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <Button 
+                    type="text" 
+                    danger 
+                    icon={<DeleteOutlined />} 
+                    onClick={() => deleteMonth(m.id)} 
+                    loading={isLoading}
+                    className="opacity-0 group-hover/month:opacity-100 transition-opacity"
+                  />
                 </div>
               ))}
             </div>
