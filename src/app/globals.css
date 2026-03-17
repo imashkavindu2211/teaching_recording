@@ -48,27 +48,27 @@ body {
 
 /* Optimized Placeholders */
 ::placeholder {
-  color: #f1f5f9 !important;
+  color: #475569 !important; /* Darkened Ash Color (slate-600) */
   opacity: 1 !important;
 }
 
 ::-webkit-input-placeholder {
-  color: #f1f5f9 !important;
+  color: #475569 !important;
   opacity: 1 !important;
 }
 
 ::-moz-placeholder {
-  color: #f1f5f9 !important;
+  color: #475569 !important;
   opacity: 1 !important;
 }
 
 :-ms-input-placeholder {
-  color: #f1f5f9 !important;
+  color: #475569 !important;
   opacity: 1 !important;
 }
 
 ::-ms-input-placeholder {
-  color: #f1f5f9 !important;
+  color: #475569 !important;
   opacity: 1 !important;
 }
 

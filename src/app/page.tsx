@@ -5,7 +5,7 @@ import { Button } from 'antd';
 import { supabase } from '@/lib/supabase';
 import ClassCard from '@/components/ClassCard';
 import AuthPage from '@/components/AuthPage';
-import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut, Lock, Unlock } from 'lucide-react';
+import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut, Lock, Unlock, Trophy } from 'lucide-react';
 import { Modal, Form, Input, message } from 'antd';
 
 interface PdfFile {
@@ -45,7 +45,7 @@ export default function Home() {
     if (savedSession) {
       setUser(JSON.parse(savedSession));
     }
-    
+
     // Load unlocked months from session storage (optional, keeps them unlocked until tab closed)
     const savedUnlocked = sessionStorage.getItem('unlocked_months');
     if (savedUnlocked) {
@@ -192,12 +192,17 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {[
             { label: 'Available Classes', value: sortedClasses.length, sub: 'Total premium sessions', icon: <PlayCircle size={20} className="text-[#DC143C]" /> },
-            { label: 'Enrollment Status', value: 'Active', sub: 'Verified student access', icon: <GraduationCap size={20} className="text-[#DC143C]" /> }
+            { label: 'Enrollment Status', value: 'Active', sub: 'Verified student access', icon: <GraduationCap size={20} className="text-[#DC143C]" /> },
+            { label: 'Merit Protocol', value: 'Check Exam Rank', sub: 'Official result portal', icon: <Trophy size={20} className="text-[#DC143C]" />, link: 'https://merit-view.vercel.app/' }
           ].map((stat, i) => (
-            <div key={i} className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl p-10 rounded-[3rem] shadow-sm border border-white dark:border-slate-800 hover:border-rose-400 dark:hover:border-rose-600 transition-all duration-700 group relative overflow-hidden">
+            <div
+              key={i}
+              onClick={() => { if (stat.link) window.open(stat.link, '_blank'); }}
+              className={`bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl p-10 rounded-[3rem] shadow-sm border border-white dark:border-slate-800 hover:border-rose-400 dark:hover:border-rose-600 transition-all duration-700 group relative overflow-hidden ${stat.link ? 'cursor-pointer' : ''}`}
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-rose-500/10 transition-colors" />
               <div className="flex items-center justify-between mb-8 relative z-10">
                 <div className="flex items-center gap-3">
@@ -210,7 +215,7 @@ export default function Home() {
                   <ArrowRight size={18} className="text-slate-300 dark:text-slate-600 group-hover:text-white" />
                 </div>
               </div>
-              <p className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter mb-2 relative z-10">{stat.value}</p>
+              <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2 relative z-10">{stat.value}</p>
               <p className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight relative z-10">{stat.sub}</p>
             </div>
           ))}
@@ -246,8 +251,8 @@ export default function Home() {
           <button
             onClick={() => verifyAccess('all')}
             className={`flex-shrink-0 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${selectedMonth === 'all'
-                ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
-                : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
+              ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
+              : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
               }`}
           >
             Free Session
@@ -259,8 +264,8 @@ export default function Home() {
                 key={month.id}
                 onClick={() => verifyAccess(month.id)}
                 className={`flex-shrink-0 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all relative ${selectedMonth === month.id
-                    ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
-                    : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
+                  ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
+                  : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
                   }`}
               >
                 <div className="flex items-center gap-2">
@@ -288,8 +293,8 @@ export default function Home() {
             </div>
             <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">No recordings found</h3>
             <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
-              {selectedMonth === 'all' 
-                ? "There are currently no free sessions available for preview." 
+              {selectedMonth === 'all'
+                ? "There are currently no free sessions available for preview."
                 : "Recordings for this period have not been deployed yet."}
             </p>
           </div>
@@ -315,47 +320,47 @@ export default function Home() {
         centered
         width={450}
         destroyOnHidden
-        styles={{ 
+        styles={{
           mask: { backdropFilter: 'blur(8px)', backgroundColor: 'rgba(2, 6, 23, 0.4)' },
           body: { padding: '24px', background: 'transparent' }
         }}
         className="dark:bg-slate-900/90 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden border border-white/20"
       >
         <Form form={accessForm} layout="vertical" onFinish={handleAccessSubmit} className="space-y-6 pt-4">
-          <Form.Item 
-            name="nic" 
+          <Form.Item
+            name="nic"
             label={<span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Student ID Number (NIC)</span>}
             rules={[{ required: true, message: 'ID Number required' }]}
           >
-            <Input 
-              placeholder="Enter your registered NIC" 
+            <Input
+              placeholder="Enter your registered color"
               className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black px-6"
             />
           </Form.Item>
-          <Form.Item 
-            name="accessCode" 
+          <Form.Item
+            name="accessCode"
             label={<span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Monthly Secure Code</span>}
             rules={[{ required: true, message: 'Access code required' }]}
           >
-            <Input 
-              placeholder="6-Digit Code" 
+            <Input
+              placeholder="6-digit code"
               className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black px-6 uppercase tracking-[0.5em] text-center"
               maxLength={6}
             />
           </Form.Item>
-          
+
           <div className="flex flex-col gap-4 pt-4">
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              block 
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
               className="h-16 bg-[#DC143C] hover:bg-rose-700 active:scale-95 transition-all rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-rose-600/20"
             >
               Unlock Access
             </Button>
-            <Button 
-              type="text" 
-              block 
+            <Button
+              type="text"
+              block
               onClick={() => setIsAccessModalOpen(false)}
               className="h-12 font-bold text-slate-400 hover:text-slate-200"
             >

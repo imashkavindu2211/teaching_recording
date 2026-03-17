@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from '@/components/ThemeProvider';
+import MainHeader from '@/components/MainHeader';
+import { Suspense } from 'react';
 import { Youtube, Facebook, MessageCircle } from 'lucide-react';
 
 const geistSans = Geist({
@@ -39,30 +41,14 @@ export default function RootLayout({
                 <div className="absolute bottom-[-10%] left-[20%] w-[45%] h-[45%] bg-slate-100 dark:bg-slate-900/30 rounded-full blur-[100px] animate-blob animation-delay-4000" />
               </div>
 
-              <header className="sticky top-0 z-50 w-full border-b border-slate-200/50 dark:border-slate-800/50 bg-white/60 dark:bg-[#020617]/60 backdrop-blur-xl transition-all">
-                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#DC143C] to-rose-700 rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/20">
-                      <span className="text-white font-black text-xl tracking-tighter">E</span>
-                    </div>
-                    <span className="font-extrabold text-2xl tracking-tighter text-slate-900 dark:text-white">Stream <span className="text-[#DC143C]">LMS</span></span>
-                  </div>
-                  <nav className="flex items-center gap-4 md:gap-8">
-                    <div className="hidden md:flex items-center gap-8 mr-4">
-                      <a href="/" className="text-sm font-black text-slate-500 dark:text-slate-400 hover:text-[#DC143C] dark:hover:text-rose-400 transition-all tracking-tight group flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#DC143C] opacity-0 group-hover:opacity-100 transition-all" />
-                        Dashboard
-                      </a>
-                      <a href="/admin" className="text-sm font-black text-slate-500 dark:text-slate-400 hover:text-[#DC143C] dark:hover:text-rose-400 transition-all tracking-tight group flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#DC143C] opacity-0 group-hover:opacity-100 transition-all" />
-                        Admin Portal
-                      </a>
-                    </div>
-                  </nav>
-                </div>
-              </header>
-              <main className="flex-grow z-10">
-                {children}
+              <Suspense fallback={<div className="h-20 w-full bg-white/60 dark:bg-[#020617]/60" />}>
+                <MainHeader />
+              </Suspense>
+
+              <main className="flex-grow z-10 flex flex-col">
+                <Suspense fallback={<div className="flex-1 flex items-center justify-center p-20 animate-pulse text-slate-300">MODERN LMS PROTOCOL INITIALIZING...</div>}>
+                  {children}
+                </Suspense>
               </main>
               <footer className="border-t border-slate-200/50 dark:border-slate-800/50 py-16 bg-white/30 dark:bg-[#020617]/30 backdrop-blur-md">
                 <div className="container mx-auto px-4">
@@ -70,9 +56,9 @@ export default function RootLayout({
                     <div className="space-y-6">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-[#DC143C] rounded-xl flex items-center justify-center shadow-lg shadow-rose-500/20">
-                          <span className="text-white font-black text-xl">E</span>
+                          <span className="text-white font-black text-xl">A</span>
                         </div>
-                        <span className="font-black text-2xl tracking-tighter text-slate-900 dark:text-white">EduStream</span>
+                        <span className="font-black text-2xl tracking-tighter text-slate-900 dark:text-white">Amarasri Herath</span>
                       </div>
                       <p className="text-slate-500 dark:text-slate-400 font-bold text-sm leading-relaxed">
                         Leading the way in professional teacher examinations with the largest online graduate community in Sri Lanka.
