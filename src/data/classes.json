@@ -1,0 +1,57 @@
+{
+  "months": [
+    {
+      "id": "2024-03",
+      "name": "March 2024"
+    },
+    {
+      "id": "2024-04",
+      "name": "April 2024"
+    }
+  ],
+  "classes": [
+    {
+      "id": "1773745131199",
+      "monthId": "2024-04",
+      "date": "2026-03-14",
+      "topic": "Teaching Exam | 2026.03.14 | Amarasri Herath",
+      "youtubeUrl": "https://youtube.com/live/V5Jn-XYo850",
+      "pdfFiles": [
+        {
+          "name": "sankya rata",
+          "googleDriveFileId": "https://drive.google.com/file/d/1EFzWplyXaKAG1etFkgChoJPJAPB2X0sq/view"
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "monthId": "2024-03",
+      "date": "2024-03-15",
+      "topic": "Introduction to React and Next.js",
+      "youtubeUrl": "https://www.youtube.com/watch?v=SqcY0GlETPk",
+      "pdfFiles": [
+        {
+          "name": "Class 01 - Basics.pdf",
+          "googleDriveFileId": "1aBcDeFgHiJkLmNoPqRsTuVwXyZ"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "monthId": "2024-03",
+      "date": "2024-03-16",
+      "topic": "Advanced State Management",
+      "youtubeUrl": "https://www.youtube.com/watch?v=SqcY0GlETPk",
+      "pdfFiles": [
+        {
+          "name": "State Management Notes.pdf",
+          "googleDriveFileId": "2bCdEfG hIjKlMnOpQrStUvWxYz"
+        },
+        {
+          "name": "Redux Cheat Sheet.pdf",
+          "googleDriveFileId": "3cDeFgH iJkLmNoPqRsTuVwXyZa"
+        }
+      ]
+    }
+  ]
+}
