@@ -5,7 +5,8 @@ import { Button } from 'antd';
 import { supabase } from '@/lib/supabase';
 import ClassCard from '@/components/ClassCard';
 import AuthPage from '@/components/AuthPage';
-import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut } from 'lucide-react';
+import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut, Lock, Unlock } from 'lucide-react';
+import { Modal, Form, Input, message } from 'antd';
 
 interface PdfFile {
   name: string;
@@ -24,6 +25,7 @@ interface ClassEntry {
 interface Month {
   id: string;
   name: string;
+  access_code?: string;
 }
 
 export default function Home() {
@@ -31,13 +33,23 @@ export default function Home() {
   const [months, setMonths] = useState<Month[]>([]);
   const [classes, setClasses] = useState<ClassEntry[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [unlockedMonths, setUnlockedMonths] = useState<string[]>([]);
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
+  const [pendingMonth, setPendingMonth] = useState<Month | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [accessForm] = Form.useForm();
 
   // Check for session on mount
   useEffect(() => {
     const savedSession = localStorage.getItem('student_session');
     if (savedSession) {
       setUser(JSON.parse(savedSession));
+    }
+    
+    // Load unlocked months from session storage (optional, keeps them unlocked until tab closed)
+    const savedUnlocked = sessionStorage.getItem('unlocked_months');
+    if (savedUnlocked) {
+      setUnlockedMonths(JSON.parse(savedUnlocked));
     }
   }, []);
 
@@ -86,7 +98,46 @@ export default function Home() {
 
   const handleLogout = () => {
     localStorage.removeItem('student_session');
+    sessionStorage.removeItem('unlocked_months');
     setUser(null);
+  };
+
+  const verifyAccess = (monthId: string) => {
+    const month = months.find(m => m.id === monthId);
+    if (!month) return;
+
+    if (monthId === 'all' || unlockedMonths.includes(monthId)) {
+      setSelectedMonth(monthId);
+    } else {
+      setPendingMonth(month);
+      setIsAccessModalOpen(true);
+    }
+  };
+
+  const handleAccessSubmit = (values: any) => {
+    if (!pendingMonth) return;
+
+    // 1. Verify ID Number (NIC) match
+    if (values.nic !== user?.nic) {
+      message.error("ID Number (NIC) does not match your registered identity.");
+      return;
+    }
+
+    // 2. Verify Access Code
+    if (values.accessCode.toUpperCase() !== pendingMonth.access_code?.toUpperCase()) {
+      message.error("Incorrect Access Code for this month.");
+      return;
+    }
+
+    // 3. Unlock & Select
+    const newUnlocked = [...unlockedMonths, pendingMonth.id];
+    setUnlockedMonths(newUnlocked);
+    sessionStorage.setItem('unlocked_months', JSON.stringify(newUnlocked));
+    setSelectedMonth(pendingMonth.id);
+    setIsAccessModalOpen(false);
+    setPendingMonth(null);
+    accessForm.resetFields();
+    message.success(`${pendingMonth.name} recordings unlocked!`);
   };
 
   if (!user) {
@@ -188,7 +239,7 @@ export default function Home() {
       <div className="container mx-auto px-4 mb-12">
         <div className="flex items-center gap-4 overflow-x-auto pb-4 no-scrollbar">
           <button
-            onClick={() => setSelectedMonth('all')}
+            onClick={() => verifyAccess('all')}
             className={`flex-shrink-0 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${selectedMonth === 'all'
                 ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
                 : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
@@ -196,21 +247,24 @@ export default function Home() {
           >
             All Sessions
           </button>
-          {months.map((month) => (
-            <button
-              key={month.id}
-              onClick={() => setSelectedMonth(month.id)}
-              className={`flex-shrink-0 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${selectedMonth === month.id
-                  ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
-                  : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <Calendar size={14} />
-                {month.name}
-              </div>
-            </button>
-          ))}
+          {months.map((month) => {
+            const isUnlocked = unlockedMonths.includes(month.id);
+            return (
+              <button
+                key={month.id}
+                onClick={() => verifyAccess(month.id)}
+                className={`flex-shrink-0 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all relative ${selectedMonth === month.id
+                    ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
+                    : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  {isUnlocked ? <Unlock size={14} className="text-emerald-500" /> : <Lock size={14} className="opacity-50" />}
+                  {month.name}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -232,6 +286,75 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Access Verification Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#DC143C] rounded-xl flex items-center justify-center text-white shadow-xl">
+              <Lock size={20} />
+            </div>
+            <div>
+              <div className="text-xl font-black tracking-tight dark:text-white">Protocol Verification</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Unlock {pendingMonth?.name}</div>
+            </div>
+          </div>
+        }
+        open={isAccessModalOpen}
+        onCancel={() => setIsAccessModalOpen(false)}
+        footer={null}
+        centered
+        width={450}
+        destroyOnHidden
+        styles={{ 
+          mask: { backdropFilter: 'blur(8px)', backgroundColor: 'rgba(2, 6, 23, 0.4)' },
+          body: { padding: '24px', background: 'transparent' }
+        }}
+        className="dark:bg-slate-900/90 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden border border-white/20"
+      >
+        <Form form={accessForm} layout="vertical" onFinish={handleAccessSubmit} className="space-y-6 pt-4">
+          <Form.Item 
+            name="nic" 
+            label={<span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Student ID Number (NIC)</span>}
+            rules={[{ required: true, message: 'ID Number required' }]}
+          >
+            <Input 
+              placeholder="Enter your registered NIC" 
+              className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black px-6"
+            />
+          </Form.Item>
+          <Form.Item 
+            name="accessCode" 
+            label={<span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Monthly Secure Code</span>}
+            rules={[{ required: true, message: 'Access code required' }]}
+          >
+            <Input 
+              placeholder="6-Digit Code" 
+              className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black px-6 uppercase tracking-[0.5em] text-center"
+              maxLength={6}
+            />
+          </Form.Item>
+          
+          <div className="flex flex-col gap-4 pt-4">
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              block 
+              className="h-16 bg-[#DC143C] hover:bg-rose-700 active:scale-95 transition-all rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-rose-600/20"
+            >
+              Unlock Access
+            </Button>
+            <Button 
+              type="text" 
+              block 
+              onClick={() => setIsAccessModalOpen(false)}
+              className="h-12 font-bold text-slate-400 hover:text-slate-200"
+            >
+              Cancel Access Request
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 }
