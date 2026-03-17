@@ -44,7 +44,6 @@ export default function MainHeader() {
           </div>
           <div className="flex flex-col">
             <span className="font-black text-2xl tracking-tighter text-white leading-none">Stream <span className="text-[#DC143C]">LMS</span></span>
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.3em] mt-1">LMS / PROTOCOL</span>
           </div>
         </div>
 
