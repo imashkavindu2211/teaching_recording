@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Button, Modal, Dropdown, MenuProps } from 'antd';
-import { PlayCircle, Download, FileText, Calendar, Youtube, Play, Pause, RotateCcw, FastForward, Rewind, Maximize } from 'lucide-react';
+import { PlayCircle, Download, FileText, Calendar, Youtube, Play, Pause, RotateCcw, FastForward, Rewind, Maximize, Settings } from 'lucide-react';
 
 interface PdfFile {
   name: string;
@@ -36,6 +36,8 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [showControls, setShowControls] = useState(true);
+  const [availableQualities, setAvailableQualities] = useState<string[]>([]);
+  const [currentQuality, setCurrentQuality] = useState<string>('auto');
   const playerRef = React.useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -88,6 +90,8 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
           onReady: (event: any) => {
             setPlayer(event.target);
             setDuration(event.target.getDuration());
+            setAvailableQualities(event.target.getAvailableQualityLevels());
+            setCurrentQuality(event.target.getPlaybackQuality());
             event.target.playVideo();
           },
           onStateChange: (event: any) => {
@@ -96,6 +100,10 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
             if (state === window.YT.PlayerState.ENDED) {
               setProgress(100);
               setIsPlaying(false);
+            }
+            if (state === window.YT.PlayerState.PLAYING) {
+              setAvailableQualities(event.target.getAvailableQualityLevels());
+              setCurrentQuality(event.target.getPlaybackQuality());
             }
           }
         }
@@ -190,6 +198,22 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
     player.seekTo(seekTo, true);
     setProgress(parseFloat(e.target.value));
     setCurrentTime(seekTo);
+  };
+
+  const handleQualityChange = (quality: string) => {
+    if (!player) return;
+    player.setPlaybackQuality(quality);
+    setCurrentQuality(quality);
+  };
+
+  const qualityMenu: MenuProps = {
+    items: availableQualities.map((q) => ({
+      key: q,
+      label: q.toUpperCase(),
+      onClick: () => handleQualityChange(q),
+      className: currentQuality === q ? 'text-[#DC143C] font-black' : ''
+    })),
+    className: "dark:bg-slate-900 border border-slate-700 font-bold"
   };
 
   // Keyboard Shortcuts
@@ -296,11 +320,11 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
 
       <Modal
         title={
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 bg-[#DC143C] rounded-xl flex items-center justify-center shadow-lg shadow-rose-200 dark:shadow-rose-900/40">
-              <Youtube className="text-white" size={24} />
+          <div className="flex items-center gap-2 md:gap-3 px-0 md:px-2">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-[#DC143C] rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-rose-200 dark:shadow-rose-900/40">
+              <Youtube className="text-white w-5 h-5 md:w-6 md:h-6" />
             </div>
-            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white truncate">{classData.topic}</span>
+            <span className="text-base md:text-xl font-black tracking-tight text-slate-900 dark:text-white truncate">{classData.topic}</span>
           </div>
         }
         open={isModalOpen}
@@ -315,11 +339,11 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
         destroyOnHidden
         styles={{ 
           mask: { backdropFilter: 'blur(12px)', backgroundColor: 'rgba(2, 6, 23, 0.4)' },
-          body: { padding: '32px', background: 'transparent' }
+          body: { padding: 'clamp(12px, 3vw, 32px)', background: 'transparent' }
         }}
-        className="dark:bg-slate-900/90 backdrop-blur-3xl rounded-3xl overflow-hidden border border-white/20"
+        className="dark:bg-slate-900/90 backdrop-blur-3xl rounded-2xl md:rounded-3xl overflow-hidden border border-white/20 mobile-full-modal"
       >
-        <div ref={playerRef} className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl bg-black border-4 border-slate-50 dark:border-slate-800 relative group/player isolation-isolate">
+        <div ref={playerRef} className="aspect-video w-full rounded-xl md:rounded-2xl overflow-hidden shadow-2xl bg-black border-2 md:border-4 border-slate-50 dark:border-slate-800 relative group/player isolation-isolate">
           {videoId ? (
             <div className="absolute inset-0 w-full h-full flex flex-col">
               {/* YouTube Container */}
@@ -400,6 +424,11 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
                     </div>
                     
                     <div className="flex items-center gap-2">
+                      <Dropdown menu={qualityMenu} placement="topRight" trigger={['click']}>
+                        <button className="text-white hover:text-[#DC143C] transition-all p-1" title="Quality Settings">
+                          <Settings size={20} className="md:w-6 md:h-6" />
+                        </button>
+                      </Dropdown>
                       <button onClick={toggleFullScreen} className="text-white hover:text-[#DC143C] transition-all p-1" title="Fullscreen">
                         <Maximize size={20} className="md:w-6 md:h-6" />
                       </button>
@@ -417,10 +446,10 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
             </div>
           )}
         </div>
-        <div className="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-slate-50/50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 backdrop-blur-md">
+        <div className="mt-4 md:mt-8 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 p-4 md:p-6 bg-slate-50/50 dark:bg-slate-800/50 rounded-xl md:rounded-2xl border border-slate-100 dark:border-slate-800 backdrop-blur-md">
           <div>
-            <div className="text-[10px] text-[#DC143C] font-black uppercase tracking-[0.2em] mb-1">RECORDING DATE</div>
-            <div className="font-bold text-slate-900 dark:text-white text-lg">{classData.date}</div>
+            <div className="text-[9px] md:text-[10px] text-[#DC143C] font-black uppercase tracking-[0.2em] mb-1">RECORDING DATE</div>
+            <div className="font-bold text-slate-900 dark:text-white text-base md:text-lg">{classData.date}</div>
           </div>
           <div className="flex flex-wrap gap-3">
             {classData.pdfFiles.map((pdf, idx) => (

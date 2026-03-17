@@ -103,10 +103,15 @@ export default function Home() {
   };
 
   const verifyAccess = (monthId: string) => {
+    if (monthId === 'all') {
+      setSelectedMonth('all');
+      return;
+    }
+
     const month = months.find(m => m.id === monthId);
     if (!month) return;
 
-    if (monthId === 'all' || unlockedMonths.includes(monthId)) {
+    if (unlockedMonths.includes(monthId)) {
       setSelectedMonth(monthId);
     } else {
       setPendingMonth(month);
@@ -145,7 +150,7 @@ export default function Home() {
   }
 
   // Filter and sort classes
-  const filteredClasses = classes.filter(c => selectedMonth === 'all' || c.monthId === selectedMonth);
+  const filteredClasses = classes.filter(c => c.monthId === selectedMonth);
   const sortedClasses = filteredClasses; // Already sorted by query
 
   return (
@@ -245,7 +250,7 @@ export default function Home() {
                 : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
               }`}
           >
-            All Sessions
+            Free Session
           </button>
           {months.map((month) => {
             const isUnlocked = unlockedMonths.includes(month.id);
@@ -270,19 +275,23 @@ export default function Home() {
 
       {/* Classes Grid */}
       <main className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {sortedClasses.map((classItem) => (
-            <ClassCard key={classItem.id} classData={classItem} />
-          ))}
-        </div>
-
-        {sortedClasses.length === 0 && (
+        {sortedClasses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {sortedClasses.map((classItem) => (
+              <ClassCard key={classItem.id} classData={classItem} />
+            ))}
+          </div>
+        ) : (
           <div className="bg-white dark:bg-slate-900/50 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 py-24 text-center">
             <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-8 text-slate-300 dark:text-slate-700 shadow-inner">
               <BookOpen size={48} />
             </div>
-            <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">No classes found</h3>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Check back later for new recordings and resources.</p>
+            <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">No recordings found</h3>
+            <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
+              {selectedMonth === 'all' 
+                ? "There are currently no free sessions available for preview." 
+                : "Recordings for this period have not been deployed yet."}
+            </p>
           </div>
         )}
       </main>

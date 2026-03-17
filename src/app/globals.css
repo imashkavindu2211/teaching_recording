@@ -71,3 +71,19 @@ body {
   color: black !important;
   opacity: 1 !important;
 }
+
+/* Mobile Modal Optimization */
+@media (max-width: 767px) {
+  .mobile-full-modal {
+    max-width: 95vw !important;
+    margin: 8px auto !important;
+  }
+  
+  .mobile-full-modal .ant-modal-content {
+    padding: 12px !important;
+  }
+
+  .mobile-full-modal .ant-modal-header {
+    margin-bottom: 12px !important;
+  }
+}
