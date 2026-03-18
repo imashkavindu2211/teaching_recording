@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Button, Modal, Dropdown, MenuProps } from 'antd';
-import { PlayCircle, Download, FileText, Calendar, Youtube, Play, Pause, RotateCcw, FastForward, Rewind, Maximize, Settings } from 'lucide-react';
+import { PlayCircle, Download, FileText, Calendar, Youtube, Play, Pause, RotateCcw, FastForward, Rewind, Maximize, Settings, Gauge } from 'lucide-react';
 
 interface PdfFile {
   name: string;
@@ -38,6 +38,8 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
   const [showControls, setShowControls] = useState(true);
   const [availableQualities, setAvailableQualities] = useState<string[]>([]);
   const [currentQuality, setCurrentQuality] = useState<string>('auto');
+  const [availablePlaybackRates, setAvailablePlaybackRates] = useState<number[]>([1]);
+  const [currentPlaybackRate, setCurrentPlaybackRate] = useState<number>(1);
   const playerRef = React.useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -92,6 +94,8 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
             setDuration(event.target.getDuration());
             setAvailableQualities(event.target.getAvailableQualityLevels());
             setCurrentQuality(event.target.getPlaybackQuality());
+            setAvailablePlaybackRates(event.target.getAvailablePlaybackRates());
+            setCurrentPlaybackRate(event.target.getPlaybackRate());
             event.target.playVideo();
           },
           onStateChange: (event: any) => {
@@ -104,6 +108,8 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
             if (state === window.YT.PlayerState.PLAYING) {
               setAvailableQualities(event.target.getAvailableQualityLevels());
               setCurrentQuality(event.target.getPlaybackQuality());
+              setAvailablePlaybackRates(event.target.getAvailablePlaybackRates());
+              setCurrentPlaybackRate(event.target.getPlaybackRate());
             }
           }
         }
@@ -206,14 +212,38 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
     setCurrentQuality(quality);
   };
 
-  const qualityMenu: MenuProps = {
-    items: availableQualities.map((q) => ({
-      key: q,
-      label: q.toUpperCase(),
-      onClick: () => handleQualityChange(q),
-      className: currentQuality === q ? 'text-[#DC143C] font-black' : ''
-    })),
-    className: "dark:bg-slate-900 border border-slate-700 font-bold"
+  const handlePlaybackRateChange = (rate: number) => {
+    if (!player) return;
+    player.setPlaybackRate(rate);
+    setCurrentPlaybackRate(rate);
+  };
+
+  const settingsMenu: MenuProps = {
+    items: [
+      {
+        key: 'speed',
+        label: `Playback Speed: ${currentPlaybackRate === 1 ? 'Normal' : currentPlaybackRate + 'x'}`,
+        icon: <Gauge size={16} />,
+        children: availablePlaybackRates.map((rate) => ({
+          key: `speed-${rate}`,
+          label: rate === 1 ? 'Normal' : `${rate}x`,
+          onClick: () => handlePlaybackRateChange(rate),
+          className: currentPlaybackRate === rate ? 'text-[#DC143C] font-black' : ''
+        }))
+      },
+      {
+        key: 'quality',
+        label: `Quality: ${currentQuality.toUpperCase()}`,
+        icon: <Settings size={16} />,
+        children: availableQualities.map((q) => ({
+          key: q,
+          label: q.toUpperCase(),
+          onClick: () => handleQualityChange(q),
+          className: currentQuality === q ? 'text-[#DC143C] font-black' : ''
+        }))
+      }
+    ],
+    className: "dark:bg-slate-900 border border-slate-700 font-bold min-w-[180px]"
   };
 
   // Keyboard Shortcuts
@@ -424,8 +454,8 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <Dropdown menu={qualityMenu} placement="topRight" trigger={['click']}>
-                        <button className="text-white hover:text-[#DC143C] transition-all p-1" title="Quality Settings">
+                      <Dropdown menu={settingsMenu} placement="topRight" trigger={['click']}>
+                        <button className="text-white hover:text-[#DC143C] transition-all p-1" title="Settings">
                           <Settings size={20} className="md:w-6 md:h-6" />
                         </button>
                       </Dropdown>
