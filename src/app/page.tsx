@@ -32,7 +32,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [months, setMonths] = useState<Month[]>([]);
   const [classes, setClasses] = useState<ClassEntry[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [unlockedMonths, setUnlockedMonths] = useState<string[]>([]);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [pendingMonth, setPendingMonth] = useState<Month | null>(null);
@@ -71,7 +71,12 @@ export default function Home() {
           .select('*, pdf_files(name, google_drive_file_id)')
           .order('date', { ascending: false });
 
-        if (monthsData) setMonths(monthsData);
+        if (monthsData) {
+          setMonths(monthsData);
+          if (monthsData.length > 0 && !selectedMonth) {
+            setSelectedMonth(monthsData[0].id);
+          }
+        }
         if (classesData) {
           // Transform naming from DB to component expectations
           const transformed = classesData.map(c => ({
@@ -246,15 +251,6 @@ export default function Home() {
       {/* Month Selection */}
       <div className="container mx-auto px-4 mb-12">
         <div className="flex items-center gap-4 overflow-x-auto pb-4 no-scrollbar">
-          <button
-            onClick={() => verifyAccess('all')}
-            className={`flex-shrink-0 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${selectedMonth === 'all'
-              ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
-              : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
-              }`}
-          >
-            Free Session
-          </button>
           {months.map((month) => {
             const isUnlocked = unlockedMonths.includes(month.id);
             return (
