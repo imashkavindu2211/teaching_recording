@@ -155,7 +155,8 @@ export default function Home() {
   }
 
   // Filter and sort classes
-  const filteredClasses = classes.filter(c => c.monthId === selectedMonth);
+  const isMonthUnlocked = unlockedMonths.includes(selectedMonth) || selectedMonth === 'all';
+  const filteredClasses = isMonthUnlocked ? classes.filter(c => c.monthId === selectedMonth) : [];
   const sortedClasses = filteredClasses; // Already sorted by query
 
   return (
@@ -281,15 +282,19 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900/50 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 py-24 text-center">
+          <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 py-24 text-center">
             <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-8 text-slate-300 dark:text-slate-700 shadow-inner">
-              <BookOpen size={48} />
+              {!isMonthUnlocked ? <Lock size={48} className="text-[#DC143C] animate-pulse" /> : <BookOpen size={48} />}
             </div>
-            <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">No recordings found</h3>
-            <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
-              {selectedMonth === 'all'
-                ? "There are currently no free sessions available for preview."
-                : "Recordings for this period have not been deployed yet."}
+            <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">
+              {!isMonthUnlocked ? "Access Restricted" : "No recordings found"}
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 mt-3 font-bold max-w-md mx-auto leading-relaxed px-6">
+              {!isMonthUnlocked
+                ? "This month's recordings are protected by a secure protocol. Please click the month tab above and enter your security code to unlock access."
+                : selectedMonth === 'all'
+                  ? "There are currently no free sessions available for preview."
+                  : "Recordings for this period have not been deployed yet. Please check back later."}
             </p>
           </div>
         )}
