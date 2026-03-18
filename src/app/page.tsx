@@ -5,7 +5,7 @@ import { Button } from 'antd';
 import { supabase } from '@/lib/supabase';
 import ClassCard from '@/components/ClassCard';
 import AuthPage from '@/components/AuthPage';
-import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut, Lock, Unlock, Trophy } from 'lucide-react';
+import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut, Lock, Unlock } from 'lucide-react';
 import { Modal, Form, Input, message } from 'antd';
 
 interface PdfFile {
@@ -196,12 +196,10 @@ export default function Home() {
           {[
             { label: 'Available Classes', value: sortedClasses.length, sub: 'Total premium sessions', icon: <PlayCircle size={20} className="text-[#DC143C]" /> },
             { label: 'Enrollment Status', value: 'Active', sub: 'Verified student access', icon: <GraduationCap size={20} className="text-[#DC143C]" /> },
-            { label: 'Merit Protocol', value: 'Check Exam Rank', sub: 'Official result portal', icon: <Trophy size={20} className="text-[#DC143C]" />, link: 'https://merit-view.vercel.app/' }
           ].map((stat, i) => (
             <div
               key={i}
-              onClick={() => { if (stat.link) window.open(stat.link, '_blank'); }}
-              className={`bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl p-10 rounded-[3rem] shadow-sm border border-white dark:border-slate-800 hover:border-rose-400 dark:hover:border-rose-600 transition-all duration-700 group relative overflow-hidden ${stat.link ? 'cursor-pointer' : ''}`}
+              className={`bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl p-10 rounded-[3rem] shadow-sm border border-white dark:border-slate-800 hover:border-rose-400 dark:hover:border-rose-600 transition-all duration-700 group relative overflow-hidden`}
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-rose-500/10 transition-colors" />
               <div className="flex items-center justify-between mb-8 relative z-10">

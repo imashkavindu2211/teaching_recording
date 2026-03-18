@@ -21,7 +21,7 @@ const AntdProvider = ({ children }: { children: React.ReactNode }) => {
           token: {
             colorPrimary: '#ef4444',
             borderRadius: 12,
-            fontFamily: 'var(--font-geist-sans)',
+            fontFamily: 'var(--font-geist-sans)', 
           },
         }}
       >
