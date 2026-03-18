@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, App } from 'antd';
 import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 
@@ -25,7 +25,9 @@ const AntdProvider = ({ children }: { children: React.ReactNode }) => {
           },
         }}
       >
-        {children}
+        <App>
+          {children}
+        </App>
       </ConfigProvider>
     );
   }
@@ -52,7 +54,9 @@ const AntdProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }}
     >
-      {children}
+      <App>
+        {children}
+      </App>
     </ConfigProvider>
   );
 };
