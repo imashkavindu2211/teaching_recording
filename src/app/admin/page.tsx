@@ -466,7 +466,6 @@ function AdminContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Form.Item name="monthId" label={<span className="font-black text-[11px] uppercase text-slate-400">Target Month</span>} rules={[{ required: true }]}>
                   <Select size="large" className="h-12 rounded-xl" placeholder="Select Registry Month">
-                    <Select.Option value="all">Free Session</Select.Option>
                     {months.map(m => <Select.Option key={m.id} value={m.id}>{m.name}</Select.Option>)}
                   </Select>
                 </Form.Item>
@@ -513,8 +512,8 @@ function AdminContent() {
         <Card className="mt-12 shadow-2xl border-white/10 bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[3rem] p-4 md:p-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
             <Title level={3} className="!font-black !tracking-tighter !m-0 dark:!text-white">Active Registry</Title>
-            <Select defaultValue="all" className="w-full md:w-64 h-12" onChange={setFilterMonth}>
-              <Select.Option value="all">View All Sessions</Select.Option>
+            <Select defaultValue="show-all" className="w-full md:w-64 h-12" onChange={setFilterMonth}>
+              <Select.Option value="show-all">View All Sessions</Select.Option>
               {months.map(m => <Select.Option key={m.id} value={m.id}>{m.name}</Select.Option>)}
             </Select>
           </div>
@@ -523,7 +522,7 @@ function AdminContent() {
             <div className="py-20 text-center"><Spin size="large" /></div>
           ) : (
             <div className="space-y-4">
-              {classes.filter(c => filterMonth === 'all' || c.monthId === filterMonth).map((item) => (
+              {classes.filter(c => filterMonth === 'show-all' || c.monthId === filterMonth).map((item) => (
                 <div key={item.id} className="bg-white/40 dark:bg-slate-800/20 p-6 rounded-[2rem] border border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 group hover:bg-white dark:hover:bg-slate-800 transition-all">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-slate-100 dark:bg-slate-900 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-red-500 transition-colors">
