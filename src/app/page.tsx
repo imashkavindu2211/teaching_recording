@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import ClassCard from '@/components/ClassCard';
 import AuthPage from '@/components/AuthPage';
 import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut, Lock, Unlock } from 'lucide-react';
-import { Modal, Form, Input, message } from 'antd';
+import { Modal, Form, Input, message, App } from 'antd';
 
 interface PdfFile {
   name: string;
@@ -38,6 +38,7 @@ export default function Home() {
   const [pendingMonth, setPendingMonth] = useState<Month | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [accessForm] = Form.useForm();
+  const { message: messageApi } = App.useApp();
 
   // Check for session on mount
   useEffect(() => {
@@ -129,13 +130,13 @@ export default function Home() {
 
     // 1. Verify ID Number (NIC) match
     if (values.nic !== user?.nic) {
-      message.error("ID Number (NIC) does not match your registered identity.");
+      messageApi.error("ID Number (NIC) does not match your registered identity.");
       return;
     }
 
     // 2. Verify Access Code
     if (values.accessCode.toUpperCase() !== pendingMonth.access_code?.toUpperCase()) {
-      message.error("Incorrect Access Code for this month.");
+      messageApi.error("Incorrect Access Code for this month.");
       return;
     }
 
@@ -147,7 +148,7 @@ export default function Home() {
     setIsAccessModalOpen(false);
     setPendingMonth(null);
     accessForm.resetFields();
-    message.success(`${pendingMonth.name} recordings unlocked!`);
+    messageApi.success(`${pendingMonth.name} recordings unlocked!`);
   };
 
   if (!user) {
@@ -332,7 +333,7 @@ export default function Home() {
             rules={[{ required: true, message: 'ID Number required' }]}
           >
             <Input
-              placeholder="Enter your registered color"
+              placeholder="Enter your registered NIC Number"
               className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black px-6"
             />
           </Form.Item>
