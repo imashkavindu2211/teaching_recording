@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Form, Input, Button, Typography, message as staticMessage, Card, App, Checkbox, Modal } from 'antd';
 import { User, Lock, Contact, ShieldCheck, ArrowRight, UserPlus, LogIn, KeyRound, RefreshCw, ShieldAlert } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { normalizeNIC } from '@/lib/utils';
 
 const { Title, Text } = Typography;
 
@@ -43,11 +44,12 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
     setLoading(true);
     try {
 
+      const normalizedNic = normalizeNIC(values.nic);
       // 2. Check if user already exists
       const { data: existingUser } = await supabase
         .from('students')
         .select('nic')
-        .eq('nic', values.nic)
+        .eq('nic', normalizedNic)
         .single();
 
       if (existingUser) {
@@ -59,7 +61,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
       const { error: regError } = await supabase
         .from('students')
         .insert([{
-          nic: values.nic,
+          nic: normalizedNic,
           fullname: values.fullname,
           password: values.password // In a real app, hash this!
         }]);
@@ -80,10 +82,11 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
   const handleLogin = async (values: any) => {
     setLoading(true);
     try {
+      const normalizedNic = normalizeNIC(values.nic);
       const { data: student, error } = await supabase
         .from('students')
         .select('*')
-        .eq('nic', values.nic)
+        .eq('nic', normalizedNic)
         .eq('password', values.password)
         .single();
 
@@ -105,11 +108,12 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
   const handleResetPassword = async (values: any) => {
     setLoading(true);
     try {
+      const normalizedNic = normalizeNIC(values.nic);
       // 1. Check if user exists
       const { data: student, error: fetchError } = await supabase
         .from('students')
         .select('id')
-        .eq('nic', values.nic)
+        .eq('nic', normalizedNic)
         .single();
 
       if (fetchError || !student) {
@@ -121,7 +125,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
       const { error: updateError } = await supabase
         .from('students')
         .update({ password: values.newPassword })
-        .eq('nic', values.nic);
+        .eq('nic', normalizedNic);
 
       if (updateError) throw updateError;
 
