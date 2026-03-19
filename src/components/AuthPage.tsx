@@ -49,8 +49,8 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
       const { data: existingUser } = await supabase
         .from('students')
         .select('nic')
-        .eq('nic', normalizedNic)
-        .single();
+        .or(`nic.eq.${normalizedNic},nic.eq.${normalizedNic}V,nic.eq.${normalizedNic}v`)
+        .maybeSingle();
 
       if (existingUser) {
         message.error("A student with this NIC is already registered.");
@@ -86,9 +86,9 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
       const { data: student, error } = await supabase
         .from('students')
         .select('*')
-        .eq('nic', normalizedNic)
+        .or(`nic.eq.${normalizedNic},nic.eq.${normalizedNic}V,nic.eq.${normalizedNic}v`)
         .eq('password', values.password)
-        .single();
+        .maybeSingle();
 
       if (error || !student) {
         message.error("Invalid NIC or Password.");
@@ -113,8 +113,8 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
       const { data: student, error: fetchError } = await supabase
         .from('students')
         .select('id')
-        .eq('nic', normalizedNic)
-        .single();
+        .or(`nic.eq.${normalizedNic},nic.eq.${normalizedNic}V,nic.eq.${normalizedNic}v`)
+        .maybeSingle();
 
       if (fetchError || !student) {
         message.error("No student found with this NIC.");

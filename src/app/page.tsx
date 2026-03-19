@@ -130,7 +130,7 @@ export default function Home() {
     if (!pendingMonth) return;
 
     // 1. Verify ID Number (NIC) match
-    if (normalizeNIC(values.nic) !== user?.nic) {
+    if (normalizeNIC(values.nic) !== normalizeNIC(user?.nic)) {
       messageApi.error("ID Number (NIC) does not match your registered identity.");
       return;
     }
