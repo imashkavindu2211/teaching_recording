@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from 'antd';
 import { supabase } from '@/lib/supabase';
+import { normalizeNIC } from '@/lib/utils';
 import ClassCard from '@/components/ClassCard';
 import AuthPage from '@/components/AuthPage';
 import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut, Lock, Unlock } from 'lucide-react';
@@ -129,7 +130,7 @@ export default function Home() {
     if (!pendingMonth) return;
 
     // 1. Verify ID Number (NIC) match
-    if (values.nic !== user?.nic) {
+    if (normalizeNIC(values.nic) !== user?.nic) {
       messageApi.error("ID Number (NIC) does not match your registered identity.");
       return;
     }
