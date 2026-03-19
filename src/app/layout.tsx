@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import MainHeader from '@/components/MainHeader';
 import { Suspense } from 'react';
 import { Youtube, Facebook, MessageCircle } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/next';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -129,6 +130,7 @@ export default function RootLayout({
               </footer>
             </div>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
