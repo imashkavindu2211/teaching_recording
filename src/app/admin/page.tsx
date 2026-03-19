@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Divider, Card, Typography, Modal, message as staticMessage, Select, Spin, App } from 'antd';
 import { PlusOutlined, MinusCircleOutlined, EditOutlined, DeleteOutlined, CopyOutlined, ReloadOutlined } from '@ant-design/icons';
-import { LogIn, Database, Edit3, LogOut, Calendar, Save, RefreshCw } from 'lucide-react';
+import { LogIn, Database, Edit3, LogOut, Calendar, Save, RefreshCw, IdCard, Search, UserCheck } from 'lucide-react';
 import dayjs from 'dayjs';
 import { supabase } from '@/lib/supabase';
+import { normalizeNIC } from '@/lib/utils';
 
 const { Title, Text } = Typography;
 
@@ -55,11 +56,63 @@ function AdminContent() {
   const [editForm] = Form.useForm();
   const [monthForm] = Form.useForm();
 
+  // Search State
+  const [searchNic, setSearchNic] = useState('');
+  const [searchName, setSearchName] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchPerformed, setSearchPerformed] = useState(false);
+
   useEffect(() => {
     if (isLoggedIn) {
       fetchData();
     }
   }, [isLoggedIn]);
+
+  const handleNicSearch = async () => {
+    if (!searchNic.trim()) return;
+    setIsSearching(true);
+    setSearchPerformed(true);
+    try {
+      const normalized = normalizeNIC(searchNic);
+      const { data, error } = await supabase
+        .from('students')
+        .select('fullname, nic')
+        .or(`nic.eq.${normalized},nic.eq.${normalized}V,nic.eq.${normalized}v`);
+      
+      if (error) throw error;
+      setSearchResults(data || []);
+      if (data && data.length > 0) {
+        message.success(`Found ${data.length} matching record(s)`);
+      }
+    } catch (err) {
+      message.error('Identity lookup failed');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleNameSearch = async () => {
+    if (!searchName.trim()) return;
+    setIsSearching(true);
+    setSearchPerformed(true);
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select('fullname, nic')
+        .ilike('fullname', `%${searchName}%`);
+      
+      if (error) throw error;
+      setSearchResults(data || []);
+      if (data && data.length > 0) {
+        message.success(`Found ${data.length} matching student(s)`);
+      }
+    } catch (err) {
+      message.error('Student search failed');
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -507,6 +560,93 @@ function AdminContent() {
             </Form>
           </Card>
         </div>
+
+        {/* Identity Directory Search */}
+        <Card className="mt-12 shadow-2xl border-white/10 bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[3rem] p-4 md:p-12">
+          <Title level={3} className="!font-black !tracking-tighter !mb-8 dark:!text-white flex items-center gap-3">
+            <IdCard className="text-red-600" size={24} /> Identity Registry Search
+          </Title>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <Text className="text-[10px] font-black uppercase text-slate-400 tracking-widest block">Lookup by Identity Number (NIC)</Text>
+              <div className="flex gap-4">
+                <Input 
+                  placeholder="Enter NIC Number (e.g. 19980123...)" 
+                  className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white/40 font-black px-6"
+                  value={searchNic}
+                  onChange={(e) => setSearchNic(e.target.value)}
+                  onPressEnter={handleNicSearch}
+                />
+                <Button 
+                  type="primary" 
+                  className="h-14 bg-slate-900 hover:bg-black rounded-2xl font-black px-8 flex items-center gap-2"
+                  onClick={handleNicSearch}
+                  loading={isSearching}
+                >
+                  <Search size={18} />
+                  <span>SECURE LOOKUP</span>
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <Text className="text-[10px] font-black uppercase text-slate-400 tracking-widest block">Lookup by Student Name</Text>
+              <div className="flex gap-4">
+                <Input 
+                  placeholder="Enter full or partial name" 
+                  className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white/40 font-black px-6"
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                  onPressEnter={handleNameSearch}
+                />
+                <Button 
+                  type="primary" 
+                  className="h-14 bg-slate-900 hover:bg-black rounded-2xl font-black px-8 flex items-center gap-2"
+                  onClick={handleNameSearch}
+                  loading={isSearching}
+                >
+                  <UserCheck size={18} />
+                  <span>FIND ACCOUNT</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/20">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900/5 dark:bg-slate-800/60">
+                      <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Registered Student Name</th>
+                      <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">National Identity (NIC)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/10">
+                    {searchResults.map((student, idx) => (
+                      <tr key={idx} className="hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="p-6 font-black dark:text-white capitalize text-lg">{student.fullname}</td>
+                        <td className="p-6">
+                           <span className="px-5 py-2 bg-rose-500/10 text-red-600 rounded-xl font-black tracking-[0.1em] text-md border border-rose-500/20">
+                             {student.nic}
+                           </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          {searchPerformed && searchResults.length === 0 && !isSearching && (
+            <div className="mt-10 p-10 bg-rose-500/5 rounded-[2rem] border-2 border-dashed border-rose-500/10 text-center">
+              <div className="w-16 h-16 bg-rose-100 dark:bg-rose-950/30 rounded-full flex items-center justify-center mx-auto mb-4 text-[#DC143C]">
+                <Search size={28} />
+              </div>
+              <Text className="block font-black text-[#DC143C] uppercase text-xs tracking-[0.2em]">Access Denied: Record Not Found</Text>
+              <Text className="block text-slate-400 font-bold text-xs mt-2 uppercase tracking-widest">The requested identity protocol does not exist in the secure database</Text>
+            </div>
+          )}
+        </Card>
 
         {/* List Section */}
         <Card className="mt-12 shadow-2xl border-white/10 bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[3rem] p-4 md:p-12">
