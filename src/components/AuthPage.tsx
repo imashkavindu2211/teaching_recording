@@ -125,7 +125,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
       const { error: updateError } = await supabase
         .from('students')
         .update({ password: values.newPassword })
-        .eq('nic', normalizedNic);
+        .eq('id', student.id);
 
       if (updateError) throw updateError;
 
