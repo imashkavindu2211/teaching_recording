@@ -52,6 +52,11 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
         .or(`nic.eq.${normalizedNic},nic.eq.${normalizedNic}V,nic.eq.${normalizedNic}v`)
         .limit(1);
 
+      if (checkError) {
+        message.error("Registry lookup failed. Please try again.");
+        return;
+      }
+
       if (existingUser && existingUser.length > 0) {
         message.error("A student with this NIC is already registered.");
         return;
