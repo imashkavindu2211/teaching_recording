@@ -46,13 +46,18 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
 
       const normalizedNic = normalizeNIC(values.nic);
       // 2. Check if user already exists
-      const { data: existingUser } = await supabase
+      const { data: existingUser, error: checkError } = await supabase
         .from('students')
         .select('nic')
         .or(`nic.eq.${normalizedNic},nic.eq.${normalizedNic}V,nic.eq.${normalizedNic}v`)
-        .maybeSingle();
+        .limit(1);
 
-      if (existingUser) {
+      if (checkError) {
+        message.error("Registry lookup failed. Please try again.");
+        return;
+      }
+
+      if (existingUser && existingUser.length > 0) {
         message.error("A student with this NIC is already registered.");
         return;
       }
@@ -83,12 +88,13 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
     setLoading(true);
     try {
       const normalizedNic = normalizeNIC(values.nic);
-      const { data: student, error } = await supabase
+      const { data: students, error } = await supabase
         .from('students')
         .select('*')
         .or(`nic.eq.${normalizedNic},nic.eq.${normalizedNic}V,nic.eq.${normalizedNic}v`)
-        .eq('password', values.password)
-        .maybeSingle();
+        .eq('password', values.password);
+
+      const student = (students && students.length > 0) ? students[0] : null;
 
       if (error || !student) {
         message.error("Invalid NIC or Password.");
@@ -110,11 +116,13 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
     try {
       const normalizedNic = normalizeNIC(values.nic);
       // 1. Check if user exists
-      const { data: student, error: fetchError } = await supabase
+      const { data: students, error: fetchError } = await supabase
         .from('students')
         .select('id')
         .or(`nic.eq.${normalizedNic},nic.eq.${normalizedNic}V,nic.eq.${normalizedNic}v`)
-        .maybeSingle();
+        .limit(1);
+
+      const student = (students && students.length > 0) ? students[0] : null;
 
       if (fetchError || !student) {
         message.error("No student found with this NIC.");
