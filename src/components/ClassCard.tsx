@@ -159,27 +159,38 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
   }, [player, isPlaying, duration]);
 
   useEffect(() => {
-    if (isPlaying && isModalOpen) {
+    if (isPlaying && showControls && isModalOpen) {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
       }, 3000);
-    } else {
+    } else if (!isPlaying) {
       setShowControls(true);
     }
     return () => {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     };
-  }, [isPlaying, isModalOpen]);
+  }, [isPlaying, showControls, isModalOpen]);
 
   const toggleFullScreen = () => {
-    if (!playerRef.current) return;
-    if (!document.fullscreenElement) {
-      playerRef.current.requestFullscreen().catch(err => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-      });
+    const el = playerRef.current;
+    if (!el) return;
+
+    const doc = document as any;
+    const element = el as any;
+
+    if (!doc.fullscreenElement && !doc.webkitFullscreenElement && !doc.mozFullScreenElement && !doc.msFullscreenElement) {
+      const requestMethod = element.requestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen || element.msRequestFullscreen;
+      if (requestMethod) {
+        requestMethod.call(element).catch((err: any) => {
+          console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+      }
     } else {
-      document.exitFullscreen();
+      const exitMethod = doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen;
+      if (exitMethod) {
+        exitMethod.call(doc);
+      }
     }
   };
 
@@ -384,17 +395,16 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
               
               {/* INTERACTION OVERLAY - Handles Play/Pause & Hover Toggle */}
               <div 
-                onClick={() => {
-                  if (!showControls) {
-                    setShowControls(true);
-                  } else {
-                    togglePlay();
-                  }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                  setShowControls(true);
                 }} 
                 onMouseMove={() => setShowControls(true)}
+                onMouseEnter={() => setShowControls(true)}
                 className="absolute inset-0 cursor-pointer z-10 bg-transparent flex items-center justify-center group/playbtn"
               >
-                <div className={`p-8 bg-[#DC143C]/95 backdrop-blur-md text-white rounded-full shadow-2xl transition-all duration-300 ${isPlaying && !showControls ? 'opacity-0' : 'opacity-100 scale-100'} ${isPlaying ? 'scale-75' : ''}`}>
+                <div className={`p-8 bg-[#DC143C]/95 backdrop-blur-md text-white rounded-full shadow-2xl transition-all duration-300 pointer-events-none ${!isPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
                   {isPlaying ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" className="ml-2" />}
                 </div>
               </div>
