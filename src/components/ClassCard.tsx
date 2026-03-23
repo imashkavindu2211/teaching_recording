@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Button, Modal, Dropdown, MenuProps } from 'antd';
-import { PlayCircle, Download, FileText, Calendar, Youtube, Play, Pause, RotateCcw, FastForward, Rewind, Maximize, Settings, Gauge } from 'lucide-react';
+import { PlayCircle, Download, FileText, Calendar, Youtube, Play, Pause, RotateCcw, FastForward, Rewind, Maximize, Settings, Gauge, RotateCw } from 'lucide-react';
 
 interface PdfFile {
   name: string;
@@ -40,6 +40,7 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
   const [currentQuality, setCurrentQuality] = useState<string>('auto');
   const [availablePlaybackRates, setAvailablePlaybackRates] = useState<number[]>([1]);
   const [currentPlaybackRate, setCurrentPlaybackRate] = useState<number>(1);
+  const [rotation, setRotation] = useState(0);
   const playerRef = React.useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -229,6 +230,19 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
     setCurrentPlaybackRate(rate);
   };
 
+  const handleRotate = () => {
+    const newRotation = (rotation + 90) % 360;
+    setRotation(newRotation);
+    
+    // Automatically trigger fullscreen for a better experience if rotating to landscape view on mobile
+    if (newRotation === 90 || newRotation === 270) {
+      const doc = document as any;
+      if (!doc.fullscreenElement && !doc.webkitFullscreenElement && !doc.mozFullScreenElement && !doc.msFullscreenElement) {
+        toggleFullScreen();
+      }
+    }
+  };
+
   const settingsMenu: MenuProps = {
     items: [
       {
@@ -384,42 +398,61 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
         }}
         className="dark:bg-slate-900/90 backdrop-blur-3xl rounded-2xl md:rounded-3xl overflow-hidden border border-white/20 mobile-full-modal"
       >
-        <div ref={playerRef} className="aspect-video w-full rounded-xl md:rounded-2xl overflow-hidden shadow-2xl bg-black border-2 md:border-4 border-slate-50 dark:border-slate-800 relative group/player isolation-isolate">
+        <div ref={playerRef} className="aspect-video w-full rounded-xl md:rounded-2xl overflow-hidden shadow-2xl bg-black border-[1px] md:border-4 border-slate-50 dark:border-slate-800 relative group/player isolation-isolate">
           {videoId ? (
             <div className="absolute inset-0 w-full h-full flex flex-col">
+              {/* Rotate Button Overlay - Visible when controls are shown */}
+              <button 
+                onClick={handleRotate}
+                className={`absolute top-4 right-4 z-[60] bg-black/60 hover:bg-[#DC143C] backdrop-blur-md text-white p-2.5 rounded-xl border border-white/10 transition-all flex items-center gap-2 group shadow-2xl ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
+              >
+                <div className="bg-[#DC143C] p-1.5 rounded-lg">
+                  <RotateCw size={18} className="group-hover:rotate-90 transition-transform duration-500" />
+                </div>
+                <span className="text-xs font-black tracking-widest uppercase pr-1 pr-2">Rotate</span>
+              </button>
+
               {/* YouTube Container */}
               <div 
                 id={`player-${classData.id}`} 
                 className="absolute inset-0 w-full h-full pointer-events-none select-none z-0"
+                style={{ 
+                  transform: `rotate(${rotation}deg)${rotation % 180 !== 0 ? ' scale(1.7777)' : ''}`,
+                  transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
               ></div>
               
               {/* INTERACTION OVERLAY - Handles Play/Pause & Hover Toggle */}
               <div 
                 onClick={(e) => {
                   e.stopPropagation();
-                  togglePlay();
-                  setShowControls(true);
+                  setShowControls(!showControls);
                 }} 
-                onMouseMove={() => setShowControls(true)}
-                onMouseEnter={() => setShowControls(true)}
-                className="absolute inset-0 cursor-pointer z-10 bg-transparent flex items-center justify-center group/playbtn"
+                onMouseMove={() => !showControls && setShowControls(true)}
+                className="absolute inset-0 cursor-pointer z-10 bg-transparent flex items-center justify-center"
               >
-                <div className={`p-8 bg-[#DC143C]/95 backdrop-blur-md text-white rounded-full shadow-2xl transition-all duration-300 pointer-events-none ${!isPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`}>
-                  {isPlaying ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" className="ml-2" />}
+                {/* Center Button Area */}
+                <div 
+                  onClick={(e) => {
+                    if (showControls) {
+                      e.stopPropagation();
+                      togglePlay();
+                    }
+                  }}
+                  className={`p-5 md:p-6 bg-[#DC143C]/95 backdrop-blur-md text-white rounded-full shadow-2xl transition-all duration-300 transform ${showControls ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}`}
+                >
+                  {isPlaying ? <Pause size={24} fill="white" className="md:w-8 md:h-8" /> : <Play size={24} fill="white" className="ml-1 md:w-8 md:h-8" />}
                 </div>
               </div>
 
               {/* CONTROLS BAR (ABSOLUTE OVERLAY) */}
               <div 
-                className={`absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-black/95 via-black/80 to-transparent z-50 pointer-events-auto transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowControls(true);
-                }}
+                className={`absolute bottom-0 left-0 right-0 p-3 md:p-6 bg-gradient-to-t from-black/95 via-black/80 to-transparent z-50 pointer-events-auto transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex flex-col gap-2 md:gap-3">
                   {/* TIMELINE */}
-                  <div className="relative group/timeline h-8 flex items-center cursor-pointer">
+                  <div className="relative group/timeline h-10 md:h-8 flex items-center cursor-pointer">
                     <input 
                       type="range"
                       min="0"
@@ -429,48 +462,51 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
                       onChange={handleSeek}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
                     />
-                    <div className="absolute left-0 right-0 h-1 bg-white/20 rounded-full group-hover/timeline:h-1.5 transition-all">
+                    <div className="absolute left-0 right-0 h-2 md:h-1 bg-white/20 rounded-full group-hover/timeline:h-2 transition-all">
                       <div 
-                        className="h-full bg-[#DC143C] shadow-[0_0_15px_rgba(220,20,60,0.8)]" 
+                        className="h-full bg-[#DC143C] shadow-[0_0_15px_rgba(220,20,60,0.8)] rounded-full" 
                         style={{ width: `${progress}%` }}
                       />
                     </div>
                     <div 
-                      className="absolute w-4 h-4 bg-white rounded-full border-2 border-[#DC143C] shadow-lg transition-transform group-hover/timeline:scale-125"
-                      style={{ left: `calc(${progress}% - 8px)` }}
+                      className="absolute w-5 h-5 md:w-4 md:h-4 bg-white rounded-full border-2 border-[#DC143C] shadow-lg transition-transform group-hover/timeline:scale-125"
+                      style={{ left: `calc(${progress}% - 10px)`, marginLeft: '0px' }}
                     />
                   </div>
 
                   {/* BOTTOM BUTTONS */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-3 md:gap-6">
-                      <button onClick={() => skip(-10)} className="text-white hover:text-[#DC143C] transition-all">
-                        <Rewind size={20} className="md:w-6 md:h-6" fill="currentColor" />
+                  <div className="flex items-center justify-between gap-1">
+                    <div className="flex items-center gap-2 md:gap-6">
+                      <button onClick={() => skip(-10)} className="text-white hover:text-[#DC143C] transition-all p-1">
+                        <Rewind size={18} className="md:w-6 md:h-6" fill="currentColor" />
                       </button>
-                      <button onClick={togglePlay} className="text-white hover:text-[#DC143C] transition-all">
-                        {isPlaying ? <Pause size={24} className="md:w-8 md:h-8" fill="currentColor" /> : <Play size={24} className="md:w-8 md:h-8" fill="currentColor" />}
+                      <button onClick={togglePlay} className="text-white hover:text-[#DC143C] transition-all p-1">
+                        {isPlaying ? <Pause size={20} className="md:w-8 md:h-8" fill="currentColor" /> : <Play size={20} className="md:w-8 md:h-8" fill="currentColor" />}
                       </button>
-                      <button onClick={() => skip(10)} className="text-white hover:text-[#DC143C] transition-all">
-                        <FastForward size={20} className="md:w-6 md:h-6" fill="currentColor" />
+                      <button onClick={() => skip(10)} className="text-white hover:text-[#DC143C] transition-all p-1">
+                        <FastForward size={18} className="md:w-6 md:h-6" fill="currentColor" />
                       </button>
                       <button onClick={() => player?.seekTo(0)} className="hidden md:block text-white/40 hover:text-white transition-all ml-2">
                         <RotateCcw size={20} />
                       </button>
                       <div className="ml-1 md:ml-2">
-                        <span className="text-white font-black text-[10px] md:text-sm tabular-nums tracking-wider truncate max-w-[80px] md:max-w-none block">
-                          {formatTime(currentTime)} <span className="text-white/30 font-bold mx-0.5 md:mx-1">/</span> {formatTime(duration)}
+                        <span className="text-white font-black text-[9px] md:text-sm tabular-nums tracking-wider truncate max-w-[70px] md:max-w-none block">
+                          {formatTime(currentTime)} <span className="text-white/30 font-bold mx-0.5">/</span> {formatTime(duration)}
                         </span>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 md:gap-2">
                       <Dropdown menu={settingsMenu} placement="topRight" trigger={['click']}>
-                        <button className="text-white hover:text-[#DC143C] transition-all p-1" title="Settings">
-                          <Settings size={20} className="md:w-6 md:h-6" />
+                        <button className="text-white hover:text-[#DC143C] transition-all p-1.5" title="Settings">
+                          <Settings size={18} className="md:w-6 md:h-6" />
                         </button>
                       </Dropdown>
-                      <button onClick={toggleFullScreen} className="text-white hover:text-[#DC143C] transition-all p-1" title="Fullscreen">
-                        <Maximize size={20} className="md:w-6 md:h-6" />
+                      <button onClick={handleRotate} className={`text-white hover:text-[#DC143C] transition-all p-1.5 rounded-lg ${rotation !== 0 ? 'bg-[#DC143C]/20 border border-[#DC143C]/40' : ''}`} title="Rotate Video">
+                        <RotateCw size={18} className="md:w-6 md:h-6" />
+                      </button>
+                      <button onClick={toggleFullScreen} className="text-white hover:text-[#DC143C] transition-all p-1.5" title="Fullscreen">
+                        <Maximize size={18} className="md:w-6 md:h-6" />
                       </button>
                       <div className="hidden sm:block px-3 py-1 bg-[#DC143C] rounded-lg text-[9px] text-white font-black uppercase tracking-[0.1em] border border-white/30">
                         SECURE
