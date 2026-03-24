@@ -94,7 +94,15 @@ const WatchPage = () => {
                     .neq('id', classId)
                     .limit(8);
                 
-                if (others) setAllClasses(others as any);
+                if (others) {
+                    setAllClasses(others.map((item: any) => ({
+                        id: item.id,
+                        topic: item.topic,
+                        date: item.date,
+                        youtubeUrl: item.youtube_url,
+                        pdfFiles: [] // Sidebar doesn't need pdf_files
+                    })));
+                }
 
             } catch (err) {
                 console.error("Fetch error:", err);
@@ -114,6 +122,7 @@ const WatchPage = () => {
     }, [dataError, router]);
 
     const getYouTubeId = (url: string) => {
+        if (!url) return null;
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|live\/)([^#\&\?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
@@ -534,24 +543,37 @@ const WatchPage = () => {
                         <div className="space-y-4">
                             <h3 className="font-black text-sm uppercase tracking-[0.2em] text-slate-400 pl-2">More Content</h3>
                             <div className="space-y-3">
-                                {allClasses.map((item) => (
-                                    <button 
-                                        key={item.id}
-                                        onClick={() => router.push(`/watch/${item.id}`)}
-                                        className="flex gap-4 p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all group w-full text-left"
-                                    >
-                                        <div className="w-32 aspect-video bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800 relative">
-                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                                                <Play size={20} fill="white" className="text-white" />
+                                {allClasses.map((item) => {
+                                    const thumbId = getYouTubeId(item.youtubeUrl);
+                                    const thumbUrl = thumbId ? `https://img.youtube.com/vi/${thumbId}/mqdefault.jpg` : null;
+
+                                    return (
+                                        <button 
+                                            key={item.id}
+                                            onClick={() => router.push(`/watch/${item.id}`)}
+                                            className="flex gap-4 p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all group w-full text-left"
+                                        >
+                                            <div className="w-32 aspect-video bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800 relative">
+                                                {thumbUrl ? (
+                                                    <img 
+                                                        src={thumbUrl} 
+                                                        alt={item.topic} 
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                                    />
+                                                ) : (
+                                                    <Youtube size={24} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
+                                                )}
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                                                    <Play size={20} fill="white" className="text-white" />
+                                                </div>
                                             </div>
-                                            <Youtube size={24} className="absolute top-1 right-1 opacity-20" />
-                                        </div>
-                                        <div className="flex flex-col justify-center min-w-0">
-                                            <div className="font-bold text-sm line-clamp-2 group-hover:text-[#DC143C] transition-colors">{item.topic}</div>
-                                            <div className="text-[10px] uppercase font-black tracking-widest text-slate-400 mt-1">{item.date}</div>
-                                        </div>
-                                    </button>
-                                ))}
+                                            <div className="flex flex-col justify-center min-w-0">
+                                                <div className="font-bold text-sm line-clamp-2 group-hover:text-[#DC143C] transition-colors">{item.topic}</div>
+                                                <div className="text-[10px] uppercase font-black tracking-widest text-slate-400 mt-1">{item.date}</div>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
