@@ -34,9 +34,9 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
   const pdfMenuItems: MenuProps['items'] = classData.pdfFiles.map((pdf, index) => ({
     key: index.toString(),
     label: (
-      <a 
-        href={getDownloadUrl(pdf.googleDriveFileId)} 
-        target="_blank" 
+      <a
+        href={getDownloadUrl(pdf.googleDriveFileId)}
+        target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 py-1 px-1"
       >
@@ -47,7 +47,7 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
   }));
 
   return (
-    <Card 
+    <Card
       className="overflow-hidden border-slate-200 dark:border-slate-800 !bg-white dark:!bg-slate-900/60 hover:border-rose-200 dark:hover:border-rose-900 transition-all duration-300 hover:shadow-2xl hover:shadow-rose-50/50 dark:hover:shadow-rose-900/10 group rounded-3xl"
       styles={{ body: { padding: '2rem' } }}
     >
@@ -69,9 +69,9 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
         </div>
 
         <div className="mt-auto pt-6 flex flex-wrap gap-3">
-          <Button 
-            type="primary" 
-            icon={<PlayCircle size={20} />} 
+          <Button
+            type="primary"
+            icon={<PlayCircle size={20} />}
             loading={loading}
             onClick={() => {
               setLoading(true);
@@ -83,8 +83,8 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
           </Button>
 
           {classData.pdfFiles.length === 1 ? (
-            <Button 
-              icon={<Download size={20} />} 
+            <Button
+              icon={<Download size={20} />}
               href={getDownloadUrl(classData.pdfFiles[0].googleDriveFileId)}
               target="_blank"
               className="flex items-center gap-2 h-12 px-6 font-bold border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-[#DC143C] dark:hover:text-rose-400 hover:border-[#DC143C] dark:hover:border-rose-900 active:scale-95 transition-all rounded-xl shadow-sm bg-transparent"
@@ -93,7 +93,7 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
             </Button>
           ) : classData.pdfFiles.length > 1 ? (
             <Dropdown menu={{ items: pdfMenuItems }} placement="bottomRight" trigger={['click']}>
-              <Button 
+              <Button
                 icon={<Download size={20} />}
                 className="flex items-center gap-2 h-12 px-6 font-bold border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-[#DC143C] dark:hover:text-rose-400 hover:border-[#DC143C] dark:hover:border-rose-900 active:scale-95 transition-all rounded-xl shadow-sm bg-transparent"
               >
