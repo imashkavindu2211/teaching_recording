@@ -41,8 +41,12 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
   const [availablePlaybackRates, setAvailablePlaybackRates] = useState<number[]>([1]);
   const [currentPlaybackRate, setCurrentPlaybackRate] = useState<number>(1);
   const [rotation, setRotation] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const playerRef = React.useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const skipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTapRef = useRef<{time: number, x: number}>({ time: 0, x: 0 });
+  const [skipFeedback, setSkipFeedback] = useState<{ show: boolean, type: 'forward' | 'rewind' }>({ show: false, type: 'forward' });
 
   const getYouTubeId = (url: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|live\/)([^#\&\?]*).*/;
@@ -97,6 +101,7 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
             setCurrentQuality(event.target.getPlaybackQuality());
             setAvailablePlaybackRates(event.target.getAvailablePlaybackRates());
             setCurrentPlaybackRate(event.target.getPlaybackRate());
+            setIsLoading(false);
             event.target.playVideo();
           },
           onStateChange: (event: any) => {
@@ -206,8 +211,18 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
 
   const skip = (seconds: number) => {
     if (!player) return;
-    const current = player.getCurrentTime();
-    player.seekTo(current + seconds, true);
+    try {
+      const current = player.getCurrentTime();
+      const newTime = Math.max(0, Math.min(duration, current + seconds));
+      player.seekTo(newTime, true);
+      
+      // Visual Feedback
+      setSkipFeedback({ show: true, type: seconds > 0 ? 'forward' : 'rewind' });
+      if (skipTimeoutRef.current) clearTimeout(skipTimeoutRef.current);
+      skipTimeoutRef.current = setTimeout(() => setSkipFeedback({ show: false, type: 'forward' }), 800);
+    } catch (e) {
+      console.error("Error seeking:", e);
+    }
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,7 +258,7 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
     }
   };
 
-  const settingsMenu: MenuProps = {
+  const settingsMenu: MenuProps = React.useMemo(() => ({
     items: [
       {
         key: 'speed',
@@ -269,7 +284,7 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
       }
     ],
     className: "dark:bg-slate-900 border border-slate-700 font-bold min-w-[180px]"
-  };
+  }), [currentPlaybackRate, availablePlaybackRates, currentQuality, availableQualities]);
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -399,17 +414,26 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
         className="dark:bg-slate-900/90 backdrop-blur-3xl rounded-2xl md:rounded-3xl overflow-hidden border border-white/20 mobile-full-modal"
       >
         <div ref={playerRef} className="aspect-video w-full rounded-xl md:rounded-2xl overflow-hidden shadow-2xl bg-black border-[1px] md:border-4 border-slate-50 dark:border-slate-800 relative group/player isolation-isolate">
+          {isLoading && videoId && (
+            <div className="absolute inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center gap-4">
+              <div className="w-12 h-12 border-4 border-[#DC143C]/20 border-t-[#DC143C] rounded-full animate-spin" />
+              <div className="text-white/40 font-bold text-xs uppercase tracking-[0.3em] animate-pulse">Initializing Player...</div>
+            </div>
+          )}
           {videoId ? (
             <div className="absolute inset-0 w-full h-full flex flex-col">
               {/* Rotate Button Overlay - Visible when controls are shown */}
               <button 
-                onClick={handleRotate}
-                className={`absolute top-4 right-4 z-[60] bg-black/60 hover:bg-[#DC143C] backdrop-blur-md text-white p-2.5 rounded-xl border border-white/10 transition-all flex items-center gap-2 group shadow-2xl ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRotate();
+                }}
+                className={`absolute top-2 right-2 md:top-4 md:right-4 z-[60] bg-black/60 hover:bg-[#DC143C] active:scale-95 backdrop-blur-md text-white p-2 md:p-3 rounded-xl md:rounded-2xl border border-white/10 transition-all flex items-center gap-1.5 md:gap-2 group shadow-2xl ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
               >
-                <div className="bg-[#DC143C] p-1.5 rounded-lg">
-                  <RotateCw size={18} className="group-hover:rotate-90 transition-transform duration-500" />
+                <div className="bg-[#DC143C] p-1.5 md:p-2 rounded-lg md:rounded-xl">
+                  <RotateCw size={14} className="md:w-[20px] md:h-[20px] group-hover:rotate-90 transition-transform duration-500" />
                 </div>
-                <span className="text-xs font-black tracking-widest uppercase pr-1 pr-2">Rotate</span>
+                <span className="text-[10px] md:text-sm font-black tracking-widest uppercase pr-1 md:pr-2">Rotate</span>
               </button>
 
               {/* YouTube Container */}
@@ -422,15 +446,46 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
                 }}
               ></div>
               
-              {/* INTERACTION OVERLAY - Handles Play/Pause & Hover Toggle */}
+              {/* INTERACTION OVERLAY - Handles Play/Pause & Hover Toggle & Double Tap to Seek */}
               <div 
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowControls(!showControls);
+                  
+                  const now = Date.now();
+                  const DOUBLE_TAP_DELAY = 300;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const xRatio = x / rect.width;
+
+                  if (now - lastTapRef.current.time < DOUBLE_TAP_DELAY) {
+                    // Double tap logic
+                    if (xRatio < 0.45) {
+                      skip(-10);
+                    } else if (xRatio > 0.55) {
+                      skip(10);
+                    } else {
+                      togglePlay();
+                    }
+                    // Reset to prevent triple tap being second double tap
+                    lastTapRef.current = { time: 0, x: 0 };
+                  } else {
+                    lastTapRef.current = { time: now, x: x };
+                    setShowControls(!showControls);
+                  }
                 }} 
                 onMouseMove={() => !showControls && setShowControls(true)}
-                className="absolute inset-0 cursor-pointer z-10 bg-transparent flex items-center justify-center"
+                className="absolute inset-0 cursor-pointer z-10 bg-transparent flex items-center justify-center select-none touch-none"
               >
+                {/* Skip Feedback Indicators */}
+                {skipFeedback.show && (
+                  <div className={`absolute ${skipFeedback.type === 'rewind' ? 'left-[15%]' : 'right-[15%]'} top-1/2 flex flex-col items-center gap-2 pointer-events-none animate-fade-in animate-zoom-in z-[70]`}>
+                    <div className="bg-[#DC143C]/20 backdrop-blur-2xl p-4 md:p-8 rounded-full border-2 border-white/20 shadow-2xl">
+                      {skipFeedback.type === 'rewind' ? <Rewind size={32} fill="white" className="md:w-[48px] md:h-[48px] text-white drop-shadow-xl" /> : <FastForward size={32} fill="white" className="md:w-[48px] md:h-[48px] text-white drop-shadow-xl" />}
+                    </div>
+                    <span className="text-white font-black text-lg md:text-2xl tracking-tighter drop-shadow-[0_0_10px_rgba(0,0,0,0.5)] uppercase">{skipFeedback.type === 'rewind' ? '-10s' : '+10s'}</span>
+                  </div>
+                )}
+
                 {/* Center Button Area */}
                 <div 
                   onClick={(e) => {
@@ -439,9 +494,9 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
                       togglePlay();
                     }
                   }}
-                  className={`p-5 md:p-6 bg-[#DC143C]/95 backdrop-blur-md text-white rounded-full shadow-2xl transition-all duration-300 transform ${showControls ? 'opacity-100 scale-100' : 'opacity-0 scale-75 pointer-events-none'}`}
+                  className={`p-4 md:p-8 bg-[#DC143C]/95 backdrop-blur-xl text-white rounded-full shadow-[0_0_50px_rgba(220,20,60,0.5)] transition-all duration-500 transform ${showControls ? 'opacity-100 scale-100 rotate-0' : 'opacity-0 scale-50 rotate-90 pointer-events-none'}`}
                 >
-                  {isPlaying ? <Pause size={24} fill="white" className="md:w-8 md:h-8" /> : <Play size={24} fill="white" className="ml-1 md:w-8 md:h-8" />}
+                  {isPlaying ? <Pause size={24} fill="white" className="md:w-10 md:h-10" /> : <Play size={24} fill="white" className="ml-1 md:w-10 md:h-10" />}
                 </div>
               </div>
 
@@ -477,16 +532,16 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
                   {/* BOTTOM BUTTONS */}
                   <div className="flex items-center justify-between gap-1">
                     <div className="flex items-center gap-2 md:gap-6">
-                      <button onClick={() => skip(-10)} className="text-white hover:text-[#DC143C] transition-all p-1">
-                        <Rewind size={18} className="md:w-6 md:h-6" fill="currentColor" />
+                      <button onClick={() => skip(-10)} className="text-white hover:text-[#DC143C] active:scale-95 transition-all p-2 md:p-1 flex items-center justify-center rounded-full hover:bg-white/10">
+                        <Rewind size={20} className="md:w-6 md:h-6" fill="currentColor" />
                       </button>
-                      <button onClick={togglePlay} className="text-white hover:text-[#DC143C] transition-all p-1">
+                      <button onClick={togglePlay} className="text-white hover:text-[#DC143C] active:scale-95 transition-all p-2 md:p-1 flex items-center justify-center rounded-full hover:bg-white/10">
                         {isPlaying ? <Pause size={20} className="md:w-8 md:h-8" fill="currentColor" /> : <Play size={20} className="md:w-8 md:h-8" fill="currentColor" />}
                       </button>
-                      <button onClick={() => skip(10)} className="text-white hover:text-[#DC143C] transition-all p-1">
-                        <FastForward size={18} className="md:w-6 md:h-6" fill="currentColor" />
+                      <button onClick={() => skip(10)} className="text-white hover:text-[#DC143C] active:scale-95 transition-all p-2 md:p-1 flex items-center justify-center rounded-full hover:bg-white/10">
+                        <FastForward size={20} className="md:w-6 md:h-6" fill="currentColor" />
                       </button>
-                      <button onClick={() => player?.seekTo(0)} className="hidden md:block text-white/40 hover:text-white transition-all ml-2">
+                      <button onClick={() => player?.seekTo(0)} className="hidden md:flex text-white/40 hover:text-white transition-all p-1 items-center justify-center">
                         <RotateCcw size={20} />
                       </button>
                       <div className="ml-1 md:ml-2">
@@ -498,14 +553,14 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
                     
                     <div className="flex items-center gap-1 md:gap-2">
                       <Dropdown menu={settingsMenu} placement="topRight" trigger={['click']}>
-                        <button className="text-white hover:text-[#DC143C] transition-all p-1.5" title="Settings">
+                        <button className="text-white hover:text-[#DC143C] transition-all p-2 md:p-1.5 flex items-center justify-center rounded-full hover:bg-white/10" title="Settings">
                           <Settings size={18} className="md:w-6 md:h-6" />
                         </button>
                       </Dropdown>
-                      <button onClick={handleRotate} className={`text-white hover:text-[#DC143C] transition-all p-1.5 rounded-lg ${rotation !== 0 ? 'bg-[#DC143C]/20 border border-[#DC143C]/40' : ''}`} title="Rotate Video">
+                      <button onClick={handleRotate} className={`text-white hover:text-[#DC143C] transition-all p-2 md:p-1.5 flex items-center justify-center rounded-full hover:bg-white/10 ${rotation !== 0 ? 'bg-[#DC143C]/20 border border-[#DC143C]/40' : ''}`} title="Rotate Video">
                         <RotateCw size={18} className="md:w-6 md:h-6" />
                       </button>
-                      <button onClick={toggleFullScreen} className="text-white hover:text-[#DC143C] transition-all p-1.5" title="Fullscreen">
+                      <button onClick={toggleFullScreen} className="text-white hover:text-[#DC143C] transition-all p-2 md:p-1.5 flex items-center justify-center rounded-full hover:bg-white/10" title="Fullscreen">
                         <Maximize size={18} className="md:w-6 md:h-6" />
                       </button>
                       <div className="hidden sm:block px-3 py-1 bg-[#DC143C] rounded-lg text-[9px] text-white font-black uppercase tracking-[0.1em] border border-white/30">
