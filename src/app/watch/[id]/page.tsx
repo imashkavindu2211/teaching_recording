@@ -167,22 +167,37 @@ const WatchPage = () => {
                 },
                 events: {
                     onReady: (event: any) => {
-                        setPlayer(event.target);
-                        setDuration(event.target.getDuration());
-                        setAvailableQualities(event.target.getAvailableQualityLevels());
-                        setCurrentQuality(event.target.getPlaybackQuality());
-                        setAvailablePlaybackRates(event.target.getAvailablePlaybackRates());
-                        setCurrentPlaybackRate(event.target.getPlaybackRate());
+                        const target = event.target;
+                        setPlayer(target);
+                        setDuration(target.getDuration());
+                        setAvailableQualities(target.getAvailableQualityLevels());
+                        setCurrentQuality(target.getPlaybackQuality());
+                        setAvailablePlaybackRates(target.getAvailablePlaybackRates());
+                        setCurrentPlaybackRate(target.getPlaybackRate());
                         setIsLoading(false);
-                        event.target.playVideo();
+                        target.playVideo();
                     },
                     onStateChange: (event: any) => {
+                        const target = event.target;
                         const state = event.data;
                         setIsPlaying(state === (window as any).YT.PlayerState.PLAYING);
+                        
+                        // Update available qualities and rates when playing starts, as they may not be available onReady
+                        if (state === (window as any).YT.PlayerState.PLAYING) {
+                            setAvailableQualities(target.getAvailableQualityLevels());
+                            setAvailablePlaybackRates(target.getAvailablePlaybackRates());
+                        }
+
                         if (state === (window as any).YT.PlayerState.ENDED) {
                             setProgress(100);
                             setIsPlaying(false);
                         }
+                    },
+                    onPlaybackQualityChange: (event: any) => {
+                        setCurrentQuality(event.data);
+                    },
+                    onPlaybackRateChange: (event: any) => {
+                        setCurrentPlaybackRate(event.data);
                     }
                 }
             });
@@ -299,33 +314,49 @@ const WatchPage = () => {
         }
     };
 
-    const settingsMenu: MenuProps = React.useMemo(() => ({
-        items: [
-          {
-            key: 'speed',
-            label: `Playback Speed: ${currentPlaybackRate === 1 ? 'Normal' : currentPlaybackRate + 'x'}`,
-            icon: <Gauge size={16} />,
-            children: availablePlaybackRates.map((rate) => ({
-              key: `speed-${rate}`,
-              label: rate === 1 ? 'Normal' : `${rate}x`,
-              onClick: () => { player.setPlaybackRate(rate); setCurrentPlaybackRate(rate); },
-              className: currentPlaybackRate === rate ? 'text-[#DC143C] font-black' : ''
-            }))
-          },
-          {
-            key: 'quality',
-            label: `Quality: ${currentQuality.toUpperCase()}`,
-            icon: <Settings size={16} />,
-            children: availableQualities.map((q) => ({
-              key: q,
-              label: q.toUpperCase(),
-              onClick: () => { player.setPlaybackQuality(q); setCurrentQuality(q); },
-              className: currentQuality === q ? 'text-[#DC143C] font-black' : ''
-            }))
-          }
-        ],
-        className: "dark:bg-slate-900 border border-slate-700 font-bold min-w-[180px]"
-    }), [currentPlaybackRate, availablePlaybackRates, currentQuality, availableQualities, player]);
+    const settingsMenu: MenuProps = React.useMemo(() => {
+        const qualityItems = availableQualities.length > 0 ? availableQualities.map((q) => ({
+            key: q,
+            label: q.toUpperCase(),
+            onClick: () => { 
+                if (player && typeof player.setPlaybackQuality === 'function') {
+                    player.setPlaybackQuality(q);
+                    setCurrentQuality(q);
+                }
+            },
+            className: currentQuality === q ? 'text-[#DC143C] font-black' : ''
+        })) : [
+            { key: 'loading-quality', label: 'No qualities available', disabled: true }
+        ];
+
+        return {
+            items: [
+              {
+                key: 'speed',
+                label: `Playback Speed: ${currentPlaybackRate === 1 ? 'Normal' : currentPlaybackRate + 'x'}`,
+                icon: <Gauge size={16} />,
+                children: availablePlaybackRates.map((rate) => ({
+                  key: `speed-${rate}`,
+                  label: rate === 1 ? 'Normal' : `${rate}x`,
+                  onClick: () => { 
+                    if (player && typeof player.setPlaybackRate === 'function') {
+                        player.setPlaybackRate(rate); 
+                        setCurrentPlaybackRate(rate); 
+                    }
+                  },
+                  className: currentPlaybackRate === rate ? 'text-[#DC143C] font-black' : ''
+                }))
+              },
+              {
+                key: 'quality',
+                label: `Quality: ${currentQuality.toUpperCase()}`,
+                icon: <Settings size={16} />,
+                children: qualityItems
+              }
+            ],
+            className: "dark:bg-slate-900 border border-slate-700 font-bold min-w-[180px]"
+        };
+    }, [currentPlaybackRate, availablePlaybackRates, currentQuality, availableQualities, player]);
 
     const getDownloadUrl = (fileId: string) => {
         if (fileId.startsWith('http')) return fileId;
