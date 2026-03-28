@@ -251,8 +251,6 @@ const WatchPage = () => {
             controlsTimeoutRef.current = setTimeout(() => {
                 setShowControls(false);
             }, 3000);
-        } else if (!isPlaying) {
-            setShowControls(true);
         }
         return () => {
             if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
@@ -431,11 +429,22 @@ const WatchPage = () => {
                                         if (now - lastTapRef.current.time < 300) {
                                             if (xRatio < 0.45) skip(-10);
                                             else if (xRatio > 0.55) skip(10);
-                                            else togglePlay();
+                                            else {
+                                                togglePlay();
+                                                setShowControls(false);
+                                            }
                                             lastTapRef.current = { time: 0, x: 0 };
                                         } else {
                                             lastTapRef.current = { time: now, x: e.clientX };
-                                            setShowControls(!showControls);
+                                            if (!showControls) {
+                                                setShowControls(true);
+                                            } else {
+                                                // If UI is already shown, a single click (especially in center) should toggle and hide
+                                                if (xRatio > 0.35 && xRatio < 0.65) {
+                                                    togglePlay();
+                                                }
+                                                setShowControls(false);
+                                            }
                                         }
                                     }}
                                     className="absolute inset-0 cursor-pointer z-10 bg-transparent flex items-center justify-center select-none touch-none"
