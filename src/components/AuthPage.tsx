@@ -186,7 +186,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
                 ? "Enter your NIC and choose a new secure password to regain access to your dashboard."
                 : view === 'admin'
                 ? "Administrative authentication required to access the cloud database console."
-                : "Sign in to resume your studies and access your specialized learning protocols."}
+                : "ඔබ අපගේ වෙබ් අඩවියට පලමුවරට පිවිසෙන අයෙක්නම් sign in වීමට පෙර Register වී සිටින්න."}
             </p>
             <div className="pt-8">
               <Button 
@@ -300,6 +300,13 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
           <div className="mb-10">
             <Title level={2} className="!font-black !tracking-tighter !mb-2 !text-slate-900">Sign In</Title>
             <Text className="text-slate-500 font-bold text-xs uppercase tracking-widest">Access Student Portal</Text>
+            
+            {/* Sinhala Instruction for Mobile */}
+            <div className="mt-6 p-4 bg-rose-50 border-l-4 border-[#DC143C] rounded-r-2xl md:hidden">
+              <p className="text-slate-800 font-bold text-sm leading-relaxed m-0">
+                ඔබ අපගේ වෙබ් අඩවියට පලමුවරට පිවිසෙන අයෙක්නම් sign in වීමට පෙර Register වී සිටින්න.
+              </p>
+            </div>
           </div>
 
           <Form layout="vertical" onFinish={handleLogin} className="space-y-4">
