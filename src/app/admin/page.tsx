@@ -7,6 +7,9 @@ import { LogIn, Database, Edit3, LogOut, Calendar, Save, RefreshCw, IdCard, Sear
 import dayjs from 'dayjs';
 import { supabase } from '@/lib/supabase';
 import { normalizeNIC } from '@/lib/utils';
+import Link from 'next/link';
+import { Users } from 'lucide-react';
+
 
 const { Title, Text } = Typography;
 
@@ -443,6 +446,12 @@ function AdminContent() {
           <Button href="/" className="h-12 px-8 rounded-2xl border-white/20 font-black text-xs uppercase tracking-widest bg-white/10 backdrop-blur-md">
             Go to Portal
           </Button>
+          <Link href="/admin/users">
+            <Button type="primary" className="h-12 px-8 rounded-2xl bg-slate-900 hover:bg-black border-none font-black text-xs uppercase tracking-widest flex items-center gap-2">
+              <Users size={16} />
+              Manage Users
+            </Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -619,6 +628,7 @@ function AdminContent() {
                     <tr className="bg-slate-900/5 dark:bg-slate-800/60">
                       <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Registered Student Name</th>
                       <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">National Identity (NIC)</th>
+                      <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/10">
@@ -629,6 +639,13 @@ function AdminContent() {
                            <span className="px-5 py-2 bg-rose-500/10 text-red-600 rounded-xl font-black tracking-[0.1em] text-md border border-rose-500/20">
                              {student.nic}
                            </span>
+                        </td>
+                        <td className="p-6 text-right">
+                          <Link href="/admin/users">
+                            <Button type="primary" size="small" className="h-10 px-6 rounded-xl bg-[#DC143C] font-black text-[10px] uppercase tracking-widest">
+                              MANAGE
+                            </Button>
+                          </Link>
                         </td>
                       </tr>
                     ))}
