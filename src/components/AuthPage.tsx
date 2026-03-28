@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Form, Input, Button, Typography, message as staticMessage, Card, App, Checkbox, Modal } from 'antd';
-import { User, Lock, Contact, ShieldCheck, ArrowRight, UserPlus, LogIn, KeyRound, RefreshCw, ShieldAlert } from 'lucide-react';
+import { User, Lock, Contact, ShieldCheck, ArrowRight, UserPlus, LogIn, KeyRound, RefreshCw, ShieldAlert, Youtube, PlayCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { normalizeNIC } from '@/lib/utils';
 
@@ -186,7 +186,19 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
                 ? "Enter your NIC and choose a new secure password to regain access to your dashboard."
                 : view === 'admin'
                 ? "Administrative authentication required to access the cloud database console."
-                : "ඔබ අපගේ වෙබ් අඩවියට පලමුවරට පිවිසෙන අයෙක්නම් sign in වීමට පෙර Register වී සිටින්න."}
+                : (
+                  <div className="space-y-4">
+                    <p>ඔබ අපගේ වෙබ් අඩවියට පලමුවරට පිවිසෙන අයෙක්නම් sign in වීමට පෙර Register වී සිටින්න.</p>
+                    <Button 
+                      href="https://youtu.be/wQKhjVfJgaQ" 
+                      target="_blank"
+                      icon={<Youtube className="text-[#FF0000]" size={20} />}
+                      className="h-12 px-6 rounded-xl bg-white/20 hover:bg-white/30 border-none text-white font-black uppercase text-[10px] tracking-widest flex items-center gap-2 mx-auto backdrop-blur-md"
+                    >
+                      ලියාපදිංචි වන ආකාරය නරඹන්න
+                    </Button>
+                  </div>
+                )}
             </p>
             <div className="pt-8">
               <Button 
@@ -218,11 +230,18 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
                 className="h-14 rounded-2xl !bg-white !text-black border-2 border-black px-6 font-black"
               />
             </Form.Item>
-            <Form.Item name="nic" rules={[{ required: true, message: 'NIC is required' }]}>
+            <Form.Item 
+              name="nic" 
+              getValueFromEvent={(e) => e.target.value.replace(/[^0-9Vv]/g, '')}
+              rules={[
+                { required: true, message: 'NIC is required' },
+                { pattern: /^[0-9Vv]*$/i, message: 'Only numbers and the letter V are allowed' }
+              ]}
+            >
               <Input 
                 prefix={<Contact className="text-black mr-2" size={20} />} 
                 placeholder="National ID (NIC)" 
-                className="h-14 rounded-2xl !bg-white !text-black border-2 border-black px-6 font-black"
+                className="h-14 rounded-2xl !bg-white !text-black border-2 border-black px-6 font-black uppercase"
               />
             </Form.Item>
             <Form.Item name="password" rules={[{ required: true, message: 'Please create a password' }, { min: 6, message: 'Password must be at least 6 characters' }]}>
@@ -302,19 +321,34 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
             <Text className="text-slate-500 font-bold text-xs uppercase tracking-widest">Access Student Portal</Text>
             
             {/* Sinhala Instruction for Mobile */}
-            <div className="mt-6 p-4 bg-rose-50 border-l-4 border-[#DC143C] rounded-r-2xl md:hidden">
+            <div className="mt-6 p-5 bg-rose-50 border-l-4 border-[#DC143C] rounded-r-2xl md:hidden flex flex-col gap-4">
               <p className="text-slate-800 font-bold text-sm leading-relaxed m-0">
                 ඔබ අපගේ වෙබ් අඩවියට පලමුවරට පිවිසෙන අයෙක්නම් sign in වීමට පෙර Register වී සිටින්න.
               </p>
+              <Button 
+                href="https://youtu.be/wQKhjVfJgaQ" 
+                target="_blank"
+                icon={<PlayCircle className="text-[#DC143C]" size={18} />}
+                className="h-12 w-full rounded-xl bg-[#DC143C]/10 hover:bg-[#DC143C]/20 border-none text-[#DC143C] font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2"
+              >
+                ලියාපදිංචි වන ආකාරය නරඹන්න
+              </Button>
             </div>
           </div>
 
           <Form layout="vertical" onFinish={handleLogin} className="space-y-4">
-            <Form.Item name="nic" rules={[{ required: true, message: 'NIC is required' }]}>
+            <Form.Item 
+              name="nic" 
+              getValueFromEvent={(e) => e.target.value.replace(/[^0-9Vv]/g, '')}
+              rules={[
+                { required: true, message: 'NIC is required' },
+                { pattern: /^[0-9Vv]*$/i, message: 'Only numbers and the letter V are allowed' }
+              ]}
+            >
               <Input 
                 prefix={<Contact className="text-black mr-2" size={20} />} 
                 placeholder="NIC Number" 
-                className="h-14 rounded-2xl !bg-white !text-black border-2 border-black px-6 font-black"
+                className="h-14 rounded-2xl !bg-white !text-black border-2 border-black px-6 font-black uppercase"
               />
             </Form.Item>
             <Form.Item name="password" rules={[{ required: true, message: 'Password is required' }]}>
@@ -414,11 +448,18 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
           </div>
 
           <Form layout="vertical" onFinish={handleResetPassword} className="space-y-4">
-            <Form.Item name="nic" rules={[{ required: true, message: 'NIC is required' }]}>
+            <Form.Item 
+              name="nic" 
+              getValueFromEvent={(e) => e.target.value.replace(/[^0-9Vv]/g, '')}
+              rules={[
+                { required: true, message: 'NIC is required' },
+                { pattern: /^[0-9Vv]*$/i, message: 'Only numbers and the letter V are allowed' }
+              ]}
+            >
               <Input 
                 prefix={<Contact className="text-black mr-2" size={20} />} 
                 placeholder="Locked Account NIC" 
-                className="h-14 rounded-2xl !bg-white !text-black border-2 border-black px-6 font-black"
+                className="h-14 rounded-2xl !bg-white !text-black border-2 border-black px-6 font-black uppercase"
               />
             </Form.Item>
             <Form.Item name="newPassword" rules={[{ required: true, message: 'New password required' }, { min: 6, message: 'Min 6 characters' }]}>
