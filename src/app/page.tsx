@@ -331,11 +331,15 @@ export default function Home() {
           <Form.Item
             name="nic"
             label={<span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Student ID Number (NIC)</span>}
-            rules={[{ required: true, message: 'ID Number required' }]}
+            getValueFromEvent={(e) => e.target.value.replace(/[^0-9Vv]/g, '')}
+            rules={[
+              { required: true, message: 'ID Number required' },
+              { pattern: /^[0-9Vv]*$/i, message: 'Only numbers and the letter V are allowed' }
+            ]}
           >
             <Input
               placeholder="Enter your registered NIC Number"
-              className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black px-6"
+              className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 font-black px-6 uppercase"
             />
           </Form.Item>
           <Form.Item

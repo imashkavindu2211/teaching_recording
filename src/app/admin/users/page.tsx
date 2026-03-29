@@ -170,8 +170,8 @@ function AdminUsersContent() {
   };
 
   const filteredStudents = students.filter(s => 
-    s.fullname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.nic?.toLowerCase().includes(searchQuery.toLowerCase())
+    (s.fullname?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (s.nic && normalizeNIC(s.nic).includes(normalizeNIC(searchQuery)))
   );
 
   if (!isLoggedIn) {
