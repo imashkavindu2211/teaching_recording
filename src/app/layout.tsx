@@ -17,8 +17,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Modern LMS - Learn Anywhere",
+  title: "Amarasri Herath - Modern LMS",
   description: "A professional Learning Management System for watching class recordings and downloading lecture notes.",
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

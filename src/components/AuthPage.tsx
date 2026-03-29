@@ -152,6 +152,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
     setLoading(true);
     // Mimic the admin page security
     if (values.password === 'Admin@25258585') {
+      sessionStorage.setItem('admin_authenticated', 'true');
       message.success("Administrator authentication successful.");
       window.location.href = '/admin';
     } else {
@@ -362,7 +363,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
               <button 
                 type="button" 
                 onClick={() => setView('admin')}
-                className="text-xs font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest flex items-center gap-1 transition-all"
+                className="hidden md:flex text-xs font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest items-center gap-1 transition-all"
               >
                 <ShieldCheck size={14} /> Admin Access
               </button>
@@ -392,13 +393,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
                 >
                   No account? REGISTER
                 </Button>
-                <Button 
-                  onClick={() => setView('admin')} 
-                  variant="text"
-                  className="w-full h-12 text-slate-500 font-black uppercase text-[10px] tracking-[0.2em]"
-                >
-                  Administrator Portal
-                </Button>
+
               </div>
             </div>
           </Form>

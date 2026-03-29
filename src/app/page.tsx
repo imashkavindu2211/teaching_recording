@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { normalizeNIC } from '@/lib/utils';
 import ClassCard from '@/components/ClassCard';
 import AuthPage from '@/components/AuthPage';
-import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, LogOut, Lock, Unlock } from 'lucide-react';
+import { PlayCircle, BookOpen, GraduationCap, ArrowRight, Youtube, Calendar, Lock, Unlock } from 'lucide-react';
 import { Modal, Form, Input, message, App } from 'antd';
 
 interface PdfFile {
@@ -103,11 +103,7 @@ export default function Home() {
     fetchData();
   }, [user]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('student_session');
-    sessionStorage.removeItem('unlocked_months');
-    setUser(null);
-  };
+
 
   const verifyAccess = (monthId: string) => {
     if (monthId === 'all') {
@@ -165,24 +161,17 @@ export default function Home() {
     <div className="min-h-screen pb-20 bg-transparent transition-colors duration-300">
       {/* Navbar / Header */}
       <div className="container mx-auto px-4 pt-10 flex justify-end">
-        <Button
-          onClick={handleLogout}
-          icon={<LogOut size={16} />}
-          className="rounded-xl font-black text-[10px] uppercase tracking-widest h-12 px-6 border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md flex items-center gap-2 hover:text-[#DC143C] transition-all"
-        >
-          Logout Session
-        </Button>
       </div>
 
       {/* Stats/Quick Info */}
       <div className="container mx-auto px-4 py-8 mb-4 relative z-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-rose-50 dark:bg-rose-950/30 text-[#DC143C] dark:text-rose-400 rounded-full text-xs font-black uppercase tracking-[0.2em] border border-rose-100 dark:border-rose-900/40 shadow-sm shadow-rose-200/20">
-              <GraduationCap size={14} />
-              <span>Amarasri Herath Education Institute</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-rose-50 dark:bg-rose-950/30 text-[#DC143C] dark:text-rose-400 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] border border-rose-100 dark:border-rose-900/40 shadow-sm shadow-rose-200/20 max-w-full">
+              <GraduationCap size={14} className="shrink-0" />
+              <span className="truncate">Amarasri Herath Education Institute</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-[1px] mb-2">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-[1px] mb-2">
               Recording <span className="text-[#DC143C] dark:text-rose-500 relative">
                 Dashboard
                 <span className="absolute bottom-2 left-0 w-full h-3 bg-[#DC143C]/10 -z-10 rounded-full" />

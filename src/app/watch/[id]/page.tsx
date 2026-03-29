@@ -403,7 +403,14 @@ const WatchPage = () => {
             </div>
 
             <main className={`${isTheaterMode ? 'max-w-full px-0' : 'max-w-[1600px] mx-auto px-0 md:px-4 lg:px-8'} mt-0 md:mt-6 transition-all duration-500`}>
-                <div className={`flex flex-col ${isTheaterMode ? 'lg:flex-col' : 'lg:flex-row'} gap-8`}>
+                {/* Cinema Ambient Glow (Dynamic Glow Effect) */}
+                {!isTheaterMode && (
+                    <div className="hidden lg:block absolute top-[15%] left-1/2 -translate-x-1/2 w-[80%] h-[60%] blur-[120px] opacity-20 pointer-events-none z-0">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-[#DC143C] via-indigo-600 to-rose-400 animate-pulse transition-all duration-1000" />
+                    </div>
+                )}
+
+                <div className={`flex flex-col ${isTheaterMode ? 'lg:flex-col' : 'lg:flex-row'} gap-8 relative z-10`}>
                     {/* LEFT COLUMN: Main Video and Information */}
                     <div className="flex-1 w-full space-y-6 min-w-0">
                         {/* THE VIDEO PLAYER CONTAINER - Pinned at the very top for mobile views */}
@@ -530,7 +537,7 @@ const WatchPage = () => {
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[10px] md:text-xs font-black text-[#DC143C] uppercase tracking-[0.3em]">Official Recording</span>
-                                        <h1 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight">{classData.topic}</h1>
+                                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight">{classData.topic}</h1>
                                     </div>
                                 </div>
 
