@@ -13,6 +13,7 @@ interface PdfFile {
 
 interface ClassEntry {
   id: string;
+  monthId?: string;
   date: string;
   topic: string;
   youtubeUrl: string;
@@ -64,6 +65,10 @@ const WatchPage = () => {
 
         async function fetchData() {
             try {
+                // Check security: what months are unlocked?
+                const savedUnlocked = sessionStorage.getItem('unlocked_months');
+                const unlockedMonths = savedUnlocked ? JSON.parse(savedUnlocked) : [];
+
                 // Fetch current class
                 const { data, error } = await supabase
                     .from('classes')
@@ -76,8 +81,15 @@ const WatchPage = () => {
                     return;
                 }
 
+                // Security Enforcement: If not 'all' category, must be in unlocked list
+                if (data.month_id !== 'all' && !unlockedMonths.includes(data.month_id)) {
+                    setDataError(true);
+                    return;
+                }
+
                 setClassData({
                     id: data.id,
+                    monthId: data.month_id,
                     date: data.date,
                     topic: data.topic,
                     youtubeUrl: data.youtube_url,
@@ -87,10 +99,11 @@ const WatchPage = () => {
                     }))
                 });
 
-                // Fetch other classes for sidebar (related content like YouTube)
+                // Fetch other classes for sidebar (restricted to same month)
                 const { data: others } = await supabase
                     .from('classes')
                     .select('id, topic, date, youtube_url')
+                    .eq('month_id', data.month_id)
                     .neq('id', classId)
                     .limit(8);
                 
