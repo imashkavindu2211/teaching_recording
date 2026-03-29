@@ -581,9 +581,9 @@ function AdminContent() {
               <div className="flex gap-4">
                 <Input 
                   placeholder="Enter NIC Number (e.g. 19980123...)" 
-                  className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white/40 font-black px-6"
+                  className="h-14 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white/40 font-black px-6 uppercase"
                   value={searchNic}
-                  onChange={(e) => setSearchNic(e.target.value)}
+                  onChange={(e) => setSearchNic(e.target.value.replace(/[^0-9Vv]/g, ''))}
                   onPressEnter={handleNicSearch}
                 />
                 <Button 
