@@ -37,7 +37,15 @@ function AdminUsersContent() {
   const [regForm] = Form.useForm();
 
   useEffect(() => {
+    const adminSession = sessionStorage.getItem('admin_authenticated');
+    if (adminSession === 'true') {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (isLoggedIn) {
+      sessionStorage.setItem('admin_authenticated', 'true');
       fetchStudents();
     }
   }, [isLoggedIn]);
@@ -75,6 +83,7 @@ function AdminUsersContent() {
 
   const handleAdminLogin = () => {
     if (adminPassword === 'Admin@25258585') {
+      sessionStorage.setItem('admin_authenticated', 'true');
       setIsLoggedIn(true);
       message.success('Secure session established');
     } else {

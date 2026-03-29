@@ -49,7 +49,7 @@ const ClassCard: React.FC<ClassCardProps> = ({ classData }) => {
   return (
     <Card
       className="overflow-hidden border-slate-200 dark:border-slate-800 !bg-white dark:!bg-slate-900/60 hover:border-rose-200 dark:hover:border-rose-900 transition-all duration-300 hover:shadow-2xl hover:shadow-rose-50/50 dark:hover:shadow-rose-900/10 group rounded-3xl"
-      styles={{ body: { padding: '2rem' } }}
+      styles={{ body: { padding: '1.25rem' } }}
     >
       <div className="flex flex-col h-full gap-5">
         <div className="flex items-start justify-between">

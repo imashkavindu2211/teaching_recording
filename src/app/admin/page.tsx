@@ -67,7 +67,15 @@ function AdminContent() {
   const [searchPerformed, setSearchPerformed] = useState(false);
 
   useEffect(() => {
+    const adminSession = sessionStorage.getItem('admin_authenticated');
+    if (adminSession === 'true') {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (isLoggedIn) {
+      sessionStorage.setItem('admin_authenticated', 'true');
       fetchData();
     }
   }, [isLoggedIn]);
@@ -159,6 +167,7 @@ function AdminContent() {
 
   const handleLogin = () => {
     if (password === 'Admin@25258585') {
+      sessionStorage.setItem('admin_authenticated', 'true');
       setIsLoggedIn(true);
       message.success('Secure session established');
     } else {
@@ -621,36 +630,61 @@ function AdminContent() {
           </div>
 
           {searchResults.length > 0 && (
-            <div className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-white/20">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-900/5 dark:bg-slate-800/60">
-                      <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Registered Student Name</th>
-                      <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">National Identity (NIC)</th>
-                      <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
-                    {searchResults.map((student, idx) => (
-                      <tr key={idx} className="hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="p-6 font-black dark:text-white capitalize text-lg">{student.fullname}</td>
-                        <td className="p-6">
-                           <span className="px-5 py-2 bg-rose-500/10 text-red-600 rounded-xl font-black tracking-[0.1em] text-md border border-rose-500/20">
-                             {student.nic}
-                           </span>
-                        </td>
-                        <td className="p-6 text-right">
-                          <Link href="/admin/users">
-                            <Button type="primary" size="small" className="h-10 px-6 rounded-xl bg-[#DC143C] font-black text-[10px] uppercase tracking-widest">
-                              MANAGE
-                            </Button>
-                          </Link>
-                        </td>
+            <div className="mt-10">
+              <div className="hidden md:block overflow-hidden rounded-[2rem] border border-white/10 bg-white/20">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-900/5 dark:bg-slate-800/60">
+                        <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">Registered Student Name</th>
+                        <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest">National Identity (NIC)</th>
+                        <th className="p-6 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                      {searchResults.map((student, idx) => (
+                        <tr key={idx} className="hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors">
+                          <td className="p-6 font-black dark:text-white capitalize text-lg">{student.fullname}</td>
+                          <td className="p-6">
+                            <span className="px-5 py-2 bg-rose-500/10 text-red-600 rounded-xl font-black tracking-[0.1em] text-md border border-rose-500/20">
+                              {student.nic}
+                            </span>
+                          </td>
+                          <td className="p-6 text-right">
+                            <Link href="/admin/users">
+                              <Button type="primary" size="small" className="h-10 px-6 rounded-xl bg-[#DC143C] font-black text-[10px] uppercase tracking-widest">
+                                MANAGE
+                              </Button>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              {/* Mobile Card Layout */}
+              <div className="flex flex-col gap-4 md:hidden">
+                {searchResults.map((student, idx) => (
+                  <div key={idx} className="bg-white/40 dark:bg-slate-900/40 p-6 rounded-[2rem] border border-white/10 shadow-sm flex flex-col gap-4">
+                    <div className="flex flex-col">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Student Name</div>
+                      <div className="font-black dark:text-white capitalize text-lg">{student.fullname}</div>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Identity (NIC)</div>
+                      <div className="bg-rose-500/10 text-red-600 rounded-xl font-black tracking-[0.1em] text-md border border-rose-500/20 px-4 py-2 w-fit">
+                        {student.nic}
+                      </div>
+                    </div>
+                    <Link href="/admin/users" className="w-full">
+                      <Button type="primary" block className="h-12 rounded-xl bg-[#DC143C] font-black text-xs uppercase tracking-[0.15em]">
+                        ACCESS REGISTRY
+                      </Button>
+                    </Link>
+                  </div>
+                ))}
               </div>
             </div>
           )}
