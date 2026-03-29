@@ -179,7 +179,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
             <Title level={1} className="!text-white !font-black !m-0 !tracking-tighter">
               {view === 'register' ? "Join the Academy" : view === 'forgot' ? "Security Recovery" : view === 'admin' ? "Admin Console" : "Welcome Back"}
             </Title>
-            <p className="text-rose-50 font-medium text-lg leading-relaxed">
+            <div className="text-rose-50 font-medium text-lg leading-relaxed">
               {view === 'register' 
                 ? "Enter your details to access the premium lesson repository and start your learning journey." 
                 : view === 'forgot'
@@ -199,7 +199,7 @@ function AuthContent({ onLoginSuccess }: AuthPageProps) {
                     </Button>
                   </div>
                 )}
-            </p>
+            </div>
             <div className="pt-8">
               <Button 
                 size="large" 
