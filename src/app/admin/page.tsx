@@ -24,6 +24,7 @@ interface ClassEntry {
   date: string;
   topic: string;
   youtubeUrl: string;
+  description?: string;
   pdfFiles: PdfFile[];
 }
 
@@ -139,6 +140,7 @@ function AdminContent() {
           date: c.date,
           topic: c.topic,
           youtubeUrl: c.youtube_url,
+          description: c.description || '',
           pdfFiles: c.pdf_files.map((p: any) => ({
             name: p.name,
             googleDriveFileId: p.google_drive_file_id
@@ -297,7 +299,8 @@ function AdminContent() {
           month_id: values.monthId,
           date: values.date.format('YYYY-MM-DD'),
           topic: values.topic,
-          youtube_url: values.youtubeUrl
+          youtube_url: values.youtubeUrl,
+          description: values.description || null
         }
       ]);
 
@@ -315,7 +318,7 @@ function AdminContent() {
       }
 
       message.success('Academic session deployed to cloud');
-      form.resetFields(['date', 'topic', 'youtubeUrl', 'pdfFiles']);
+      form.resetFields(['date', 'topic', 'youtubeUrl', 'description', 'pdfFiles']);
       fetchData();
     } catch (error: any) {
       message.error(`Deployment failed: ${error.message}`);
@@ -333,7 +336,8 @@ function AdminContent() {
         month_id: values.monthId,
         date: values.date.format('YYYY-MM-DD'),
         topic: values.topic,
-        youtube_url: values.youtubeUrl
+        youtube_url: values.youtubeUrl,
+        description: values.description || null
       }).eq('id', editingClass.id);
 
       if (classError) throw classError;
@@ -404,6 +408,7 @@ function AdminContent() {
       topic: classItem.topic,
       date: dayjs(classItem.date),
       youtubeUrl: classItem.youtubeUrl,
+      description: classItem.description,
       pdfFiles: classItem.pdfFiles,
     });
     setIsEditModalOpen(true);
@@ -549,6 +554,9 @@ function AdminContent() {
               </Form.Item>
               <Form.Item name="topic" label={<span className="font-black text-[11px] uppercase text-slate-400">Academic Topic</span>} rules={[{ required: true }]}>
                 <Input className="h-14 rounded-xl font-black text-lg" placeholder="e.g. Logic Systems" />
+              </Form.Item>
+              <Form.Item name="description" label={<span className="font-black text-[11px] uppercase text-slate-400">Class Description (Optional)</span>}>
+                <Input.TextArea className="rounded-xl" rows={4} placeholder="Enter description for this class... (Visible to students)" />
               </Form.Item>
 
               <Divider className="!my-8" />
@@ -761,6 +769,9 @@ function AdminContent() {
           </Form.Item>
           <Form.Item name="topic" label={<span className="font-black text-[11px] uppercase text-slate-400">Topic</span>} rules={[{ required: true }]}>
             <Input className="h-12 rounded-xl font-bold" />
+          </Form.Item>
+          <Form.Item name="description" label={<span className="font-black text-[11px] uppercase text-slate-400">Description (Optional)</span>}>
+            <Input.TextArea className="rounded-xl" rows={4} />
           </Form.Item>
 
           <Form.List name="pdfFiles">
