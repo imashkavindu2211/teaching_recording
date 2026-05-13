@@ -242,14 +242,14 @@ export default function Home() {
 
       {/* Month Selection */}
       <div className="container mx-auto px-4 mb-12">
-        <div className="flex items-center gap-4 overflow-x-auto pb-4 no-scrollbar">
+        <div className="grid grid-cols-2 md:flex items-center gap-4 pb-4 no-scrollbar">
           {months.map((month) => {
             const isUnlocked = unlockedMonths.includes(month.id);
             return (
               <button
                 key={month.id}
                 onClick={() => verifyAccess(month.id)}
-                className={`flex-shrink-0 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all relative ${selectedMonth === month.id
+                className={`flex-shrink-0 px-4 md:px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all relative ${selectedMonth === month.id
                   ? 'bg-[#DC143C] text-white shadow-xl shadow-rose-500/20'
                   : 'bg-white/40 dark:bg-slate-900/40 text-slate-400 hover:text-[#DC143C] backdrop-blur-md border border-white dark:border-slate-800'
                   }`}
