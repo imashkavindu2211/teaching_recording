@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button, Dropdown, MenuProps } from 'antd';
-import { Layout, Youtube, ChevronLeft, Calendar, FileText, Play, Pause, RotateCcw, FastForward, Rewind, Maximize, Settings, Gauge, RotateCw, GraduationCap } from 'lucide-react';
+import { Layout, Youtube, ChevronLeft, Calendar, FileText, Play, Pause, RotateCcw, FastForward, Rewind, Maximize, Settings, Gauge, RotateCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface PdfFile {
@@ -50,7 +50,7 @@ const WatchPage = () => {
     const lastTapRef = useRef<{time: number, x: number}>({ time: 0, x: 0 });
     const [isTheaterMode, setIsTheaterMode] = useState(false);
     const [allClasses, setAllClasses] = useState<ClassEntry[]>([]);
-
+    
     // Parallel Initialization: Load script immediately on mount
     useEffect(() => {
         if (!(window as any).YT) {
@@ -606,7 +606,7 @@ const WatchPage = () => {
                     <div className={`${isTheaterMode ? 'px-4 lg:px-32 xl:px-64' : 'lg:w-[400px] px-4 md:px-0'} shrink-0 space-y-8 pb-20`}>
                         <div className="bg-gradient-to-br from-[#DC143C]/5 to-rose-500/5 dark:from-[#DC143C]/10 dark:to-rose-500/10 border border-rose-100/50 dark:border-rose-900/10 p-6 rounded-3xl">
                             <h3 className="text-slate-900 dark:text-white font-black mb-1 flex items-center gap-2">
-                                <GraduationCap size={18} className="text-[#DC143C]" />
+                                <Youtube size={18} className="text-[#DC143C]" />
                                 Study Guide
                             </h3>
                             <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
