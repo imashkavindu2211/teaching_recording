@@ -27,6 +27,7 @@ const WatchPage = () => {
     const classId = params?.id as string;
     const [classData, setClassData] = useState<ClassEntry | null>(null);
     const [dataError, setDataError] = useState(false);
+    const [user, setUser] = useState<any>(null);
     
     // Player states
     const [player, setPlayer] = useState<any>(null);
@@ -51,6 +52,13 @@ const WatchPage = () => {
     const [isTheaterMode, setIsTheaterMode] = useState(false);
     const [allClasses, setAllClasses] = useState<ClassEntry[]>([]);
     
+    useEffect(() => {
+        const savedSession = localStorage.getItem('student_session');
+        if (savedSession) {
+            setUser(JSON.parse(savedSession));
+        }
+    }, []);
+
     // Parallel Initialization: Load script immediately on mount
     useEffect(() => {
         if (!(window as any).YT) {
@@ -439,6 +447,17 @@ const WatchPage = () => {
                                         }}
                                     />
                                 </div>
+
+                                {/* FLOATING WATERMARK (Security) */}
+                                {user?.nic && (
+                                    <div className="absolute inset-0 z-20 pointer-events-none select-none overflow-hidden">
+                                        <div className="absolute opacity-10 animate-watermark whitespace-nowrap">
+                                            <span className="text-white font-black text-[10px] md:text-xs tracking-widest bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                                                {user.nic}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* INTERACTION OVERLAY */}
                                 <div 
