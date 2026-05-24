@@ -163,6 +163,51 @@ export default function Home() {
       <div className="container mx-auto px-4 pt-10 flex justify-end">
       </div>
 
+      {/* Congratulatory Banner */}
+      <div className="container mx-auto px-4 py-6 relative z-20">
+        <div className="relative group rounded-[3rem] p-[3px] overflow-hidden hover:scale-[1.02] transition-transform duration-500 ease-out shadow-[0_0_40px_rgba(220,20,60,0.15)] dark:shadow-[0_0_40px_rgba(220,20,60,0.3)]">
+          {/* Animated Glowing Border Background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-[#DC143C] to-indigo-600 animate-pulse opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+          
+          <div className="relative bg-white/95 dark:bg-[#0a0205]/95 backdrop-blur-3xl px-6 py-12 md:py-16 md:px-12 rounded-[2.8rem] text-center overflow-hidden">
+            
+            {/* Ambient Background Orbs */}
+            <div className="absolute top-0 left-0 w-72 h-72 bg-[#DC143C]/10 dark:bg-[#DC143C]/20 rounded-full blur-[80px] -translate-x-1/2 -translate-y-1/2 animate-blob" />
+            <div className="absolute bottom-0 right-0 w-72 h-72 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-[80px] translate-x-1/2 translate-y-1/2 animate-blob animation-delay-2000" />
+            
+            {/* Background Decorative Icons */}
+            <div className="absolute -top-16 -right-16 text-[#DC143C]/5 dark:text-rose-500/10 rotate-12 transition-transform duration-700 group-hover:rotate-45 group-hover:scale-125">
+              <GraduationCap size={300} strokeWidth={0.5} />
+            </div>
+            <div className="absolute -bottom-16 -left-16 text-indigo-500/5 dark:text-indigo-400/10 -rotate-12 transition-transform duration-700 group-hover:-rotate-45 group-hover:scale-125">
+              <BookOpen size={250} strokeWidth={0.5} />
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center">
+              {/* Badge */}
+              <div className="mb-6 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 shadow-sm backdrop-blur-md">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#DC143C] animate-ping absolute" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#DC143C] relative" />
+                <span className="text-[#DC143C] dark:text-rose-400 text-[10px] sm:text-xs font-black tracking-[0.2em] uppercase">Special Message</span>
+              </div>
+
+              {/* Main Text */}
+              <p className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-800 dark:text-white leading-[1.6] md:leading-[1.6] lg:leading-[1.6] mb-8 tracking-tight drop-shadow-sm max-w-5xl mx-auto">
+                අද දින උපාධි ගුරු විභාගය සඳහා මුහුණ දෙන ඔබ සැමට සාර්ථකව විභාගයට මුහුණ දීමට අවශ්‍ය ශක්තිය ලැබේවායි ප්‍රාර්ථනා කරමු.
+              </p>
+
+              {/* Signature */}
+              <div className="relative group/sig inline-block">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#DC143C]/10 dark:via-[#DC143C]/20 to-transparent blur-xl group-hover/sig:opacity-100 transition-opacity opacity-50" />
+                <p className="text-lg md:text-xl lg:text-2xl font-black text-[#DC143C] dark:text-rose-400 tracking-wide relative z-10 bg-rose-50/80 dark:bg-white/5 px-8 py-4 rounded-2xl border border-rose-200 dark:border-[#DC143C]/30 shadow-inner backdrop-blur-sm">
+                  _අමරශ්‍රී හේරත් සර් ඇතුළු ඇදුරු මඩුල්ල-
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Stats/Quick Info */}
       <div className="container mx-auto px-4 py-8 mb-4 relative z-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
